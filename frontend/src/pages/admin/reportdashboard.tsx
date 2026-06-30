@@ -22,7 +22,7 @@ const statCards: StatCardData[] = [
 ];
 
 // Replace with real data from your API
-const verticalCases: VerticalCase[] = [];
+//const verticalCases: VerticalCase[] = [];
 
 const MOBILE_BREAKPOINT = 768;
 
@@ -43,6 +43,30 @@ export default function ReportDashboard() {
     const [activeNav, setActiveNav] = useState("Report");
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
+    const [verticalCases, setVerticalCases] = useState<VerticalCase[]>([]);
+    const [verticalsLoading, setVerticalsLoading] = useState(true);
+    const [verticalsError, setVerticalsError] = useState<string | null>(null);
+
+    const fetchVerticalCases = async () => {
+        setVerticalsLoading(true);
+        setVerticalsError(null);
+        try {
+            const res = await fetch("/api/verticals/case-counts");
+            if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+            const data: VerticalCase[] = await res.json();
+            setVerticalCases(data);
+        } catch (err) {
+            console.error("Failed to fetch vertical case counts:", err);
+            setVerticalsError("Couldn't load vertical case data.");
+        } finally {
+            setVerticalsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchVerticalCases();
+    }, []);
+
     const handleSetActiveNav = (label: string) => {
         setActiveNav(label);
         if (isMobile) setSidebarOpen(false);
@@ -50,7 +74,7 @@ export default function ReportDashboard() {
 
     // Replace with a real refetch/API call once data is wired up
     const handleRefresh = () => {
-        window.location.reload();
+        fetchVerticalCases();
     };
     return (
         <div style={isMobile ? styles.rootMobile : styles.root}>
@@ -127,23 +151,27 @@ export default function ReportDashboard() {
                         </div>
 
                         <div style={styles.rightCol}>
-                            <div style={styles.tableHead}>
-                                <span style={styles.tableHeadLabel}>Vertical Name</span>
-                                <span style={styles.tableHeadLabel}>Total Number of Vertical Cases</span>
-                            </div>
-                            <div style={styles.tableBody}>
-                                {verticalCases.length === 0 ? (
-                                    <div style={styles.emptyState}>No vertical data yet</div>
-                                ) : (
-                                    verticalCases.map((v) => (
-                                        <div key={v.name} style={styles.tableRow}>
-                                            <span>{v.name}</span>
-                                            <span>{v.count}</span>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
+    <div style={styles.tableHead}>
+        <span style={styles.tableHeadLabel}>Vertical Name</span>
+        <span style={styles.tableHeadLabel}>Total Number of Vertical Cases</span>
+    </div>
+    <div style={styles.tableBody}>
+        {verticalsLoading ? (
+            <div style={styles.emptyState}>Loading vertical data...</div>
+        ) : verticalsError ? (
+            <div style={styles.emptyState}>{verticalsError}</div>
+        ) : verticalCases.length === 0 ? (
+            <div style={styles.emptyState}>No vertical data yet</div>
+        ) : (
+            verticalCases.map((v) => (
+                <div key={v.name} style={styles.tableRow}>
+                    <span>{v.name}</span>
+                    <span>{v.count}</span>
+                </div>
+            ))
+        )}
+    </div>
+</div>
                     </div>
                 </div>
             </div>
