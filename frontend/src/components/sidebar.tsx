@@ -8,13 +8,15 @@ type MenuItem = {
 };
 
 const menuItems: MenuItem[] = [
-  { label: "Dashboard", icon: "📊", path: "/dashboard", roles: ["ADMIN", "MANAGER", "EMPLOYEE"] },
-  { label: "My Tasks", icon: "✅", path: "/tasks", roles: ["EMPLOYEE", "MANAGER", "ADMIN"] },
-  { label: "Daily Report", icon: "📝", path: "/report", roles: ["EMPLOYEE"] },
-  { label: "My Team", icon: "👥", path: "/team", roles: ["MANAGER", "ADMIN"] },
-  { label: "Assign Tasks", icon: "📌", path: "/assign-tasks", roles: ["MANAGER", "ADMIN"] },
-  { label: "Performance", icon: "📈", path: "/performance", roles: ["MANAGER", "ADMIN"] },
-  { label: "All Employees", icon: "🏢", path: "/employees", roles: ["ADMIN"] },
+  { label: "Add User", icon: "ti ti-user-plus", path: "/add-user", roles: ["ADMIN"] },
+  { label: "Today's Task", icon: "ti ti-clipboard-list", path: "/tasks", roles: ["EMPLOYEE", "MANAGER", "ADMIN"] },
+  { label: "Team Preview", icon: "ti ti-users", path: "/team", roles: ["MANAGER", "ADMIN"] },
+  { label: "View Employee", icon: "ti ti-eye", path: "/employees", roles: ["MANAGER", "ADMIN"] },
+  { label: "Task Progress", icon: "ti ti-file-description", path: "/task-progress", roles: ["EMPLOYEE", "MANAGER", "ADMIN"] },
+  { label: "Report", icon: "ti ti-chart-line", path: "/report", roles: ["EMPLOYEE", "MANAGER", "ADMIN"] },
+  { label: "History", icon: "ti ti-history", path: "/history", roles: ["EMPLOYEE", "MANAGER", "ADMIN"] },
+  { label: "Admin", icon: "ti ti-user", path: "/admin", roles: ["ADMIN"] },
+  { label: "Profile", icon: "ti ti-settings", path: "/profile", roles: ["EMPLOYEE", "MANAGER", "ADMIN"] },
 ];
 
 interface SidebarProps {
@@ -24,9 +26,8 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ active: activeProp, setActive: setActiveProp, onLogout }: SidebarProps) => {
-  const [internalActive, setInternalActive] = useState("Dashboard");
+  const [internalActive, setInternalActive] = useState("Today's Task");
 
-  // Use external active/setActive if provided, otherwise use internal state
   const active = activeProp ?? internalActive;
   const setActive = setActiveProp ?? setInternalActive;
 
@@ -34,7 +35,7 @@ const Sidebar = ({ active: activeProp, setActive: setActiveProp, onLogout }: Sid
   const user = userStr ? JSON.parse(userStr) : null;
   const role = user?.role || "EMPLOYEE";
 
-  const visibleItems = menuItems.filter(item => item.roles.includes(role));
+  const visibleItems = menuItems.filter((item) => item.roles.includes(role));
 
   const handleLogout = () => {
     if (onLogout) {
@@ -46,95 +47,91 @@ const Sidebar = ({ active: activeProp, setActive: setActiveProp, onLogout }: Sid
   };
 
   return (
-    <aside style={{
-      width: "240px",
-      background: "#1e293b",
-      color: "#fff",
-      padding: "0",
-      minHeight: "100vh",
-      display: "flex",
-      flexDirection: "column",
-    }}>
-      {/* Logo area */}
-      <div style={{
-        padding: "24px 20px",
-        borderBottom: "1px solid #334155",
-      }}>
-        <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#fff", margin: 0 }}>
-          🏢 CMS System
-        </h2>
-        <p style={{ fontSize: "12px", color: "#94a3b8", margin: "4px 0 0" }}>
-          Case Management
-        </p>
-      </div>
+    <aside
+      style={{
+        width: "210px",
+        background: "#e7e7e7",
+        padding: "18px 12px",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        gap: "10px",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      }}
+    >
+      {visibleItems.map((item) => {
+        const isToday = item.label === "Today's Task";
 
-      {/* User info */}
-      {user && (
-        <div style={{
-          padding: "16px 20px",
-          borderBottom: "1px solid #334155",
-          background: "#0f172a",
-        }}>
-          <p style={{ fontSize: "13px", fontWeight: "600", margin: 0 }}>
-            {user.firstName} {user.lastName}
-          </p>
-          <span style={{
-            fontSize: "11px",
-            background: role === "ADMIN" ? "#7c3aed" : role === "MANAGER" ? "#0369a1" : "#065f46",
-            color: "#fff",
-            padding: "2px 8px",
-            borderRadius: "20px",
-            marginTop: "4px",
-            display: "inline-block",
-          }}>
-            {role}
-          </span>
-        </div>
-      )}
-
-      {/* Menu items */}
-      <nav style={{ padding: "12px 0", flex: 1 }}>
-        {visibleItems.map(item => (
+        return (
           <div
             key={item.label}
             onClick={() => setActive(item.label)}
             style={{
-              padding: "12px 20px",
-              cursor: "pointer",
               display: "flex",
               alignItems: "center",
+              justifyContent: isToday ? "space-between" : "flex-start",
               gap: "10px",
-              fontSize: "14px",
-              background: active === item.label ? "#3b82f6" : "transparent",
-              color: active === item.label ? "#fff" : "#cbd5e1",
-              borderLeft: active === item.label ? "3px solid #93c5fd" : "3px solid transparent",
-              transition: "all 0.2s",
+              background: isToday ? "#f4a93c" : "#fff",
+              color: isToday ? "#3a2200" : "#3b3b8f",
+              borderRadius: "24px",
+              padding: "11px 18px",
+              fontSize: "13px",
+              fontWeight: 500,
+              cursor: "pointer",
             }}
           >
-            <span>{item.icon}</span>
-            <span>{item.label}</span>
+            {isToday ? (
+              <>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span
+                    style={{
+                      width: "8px",
+                      height: "8px",
+                      borderRadius: "50%",
+                      background: "#d6362e",
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span>{item.label}</span>
+                </div>
+                <i
+                  className="ti ti-alert-triangle"
+                  style={{ fontSize: "15px", color: "#3a2200" }}
+                  aria-hidden="true"
+                />
+              </>
+            ) : (
+              <>
+                <i
+                  className={item.icon}
+                  style={{ fontSize: "16px", color: "#3b3b8f", flexShrink: 0 }}
+                  aria-hidden="true"
+                />
+                <span>{item.label}</span>
+              </>
+            )}
           </div>
-        ))}
-      </nav>
+        );
+      })}
 
-      {/* Logout */}
-      <div style={{ padding: "16px 20px", borderTop: "1px solid #334155" }}>
-        <button
-          onClick={handleLogout}
-          style={{
-            width: "100%",
-            padding: "10px",
-            background: "#dc2626",
-            color: "#fff",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            fontSize: "13px",
-            fontWeight: "500",
-          }}
-        >
-          🚪 Sign Out
-        </button>
+      {/* Sign off — same pill style as the rest */}
+      <div
+        onClick={handleLogout}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          background: "#fff",
+          color: "#3b3b8f",
+          borderRadius: "24px",
+          padding: "11px 18px",
+          fontSize: "13px",
+          fontWeight: 500,
+          cursor: "pointer",
+        }}
+      >
+        <i className="ti ti-logout-2" style={{ fontSize: "16px", color: "#3b3b8f" }} aria-hidden="true" />
+        Sign off
       </div>
     </aside>
   );

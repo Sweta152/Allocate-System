@@ -9,29 +9,39 @@ const Login = () => {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setLoading(true);
-        setError("");
-        try {
-            const res = await fetch("http://localhost:3001/api/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: username, password }),
-            });
-            const data = await res.json();
+  const API_URL = import.meta.env.VITE_API_URL;
 
-            console.log(data);
-            if (!data.success) throw new Error(data.message);
-            localStorage.setItem("accessToken", data.data.accessToken);
-            localStorage.setItem("user", JSON.stringify(data.data.user));
-            window.location.href = "/dashboard";
-        } catch (err: any) {
-            setError(err.message || "Login failed.");
-        } finally {
-            setLoading(false);
+const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+        const res = await fetch(`${API_URL}/api/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: username, password }),
+        });
+
+        const data = await res.json();
+
+        console.log("LOGIN RESPONSE:", data);
+
+        if (!res.ok || !data.success) {
+            throw new Error(data.message || "Login failed");
         }
-    };
+
+        localStorage.setItem("accessToken", data.data.accessToken);
+        localStorage.setItem("user", JSON.stringify(data.data.user));
+
+        window.location.href = "/dashboard";
+
+    } catch (err: any) {
+        setError(err.message || "Login failed.");
+    } finally {
+        setLoading(false);
+    }
+};
 
     return (
         <div style={{

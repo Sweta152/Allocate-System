@@ -164,11 +164,12 @@ export default function VerticalsTab() {
 }
 
 const styles: Record<string, CSSProperties> = {
-  wrap: {
+ wrap: {
   display: "flex",
   flexDirection: "column",
   gap: 16,
   width: "100%",
+  minWidth: 0,
 },
   toolbar: {
   display: "flex",
@@ -193,14 +194,18 @@ const styles: Record<string, CSSProperties> = {
     background: "linear-gradient(135deg, #e53935, #c62828)",
     color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 700,
   },
-  tableWrap: {
+ tableWrap: {
   width: "100%",
-  borderRadius: 10,
   overflowX: "auto",
+  borderRadius: 10,
   border: "1px solid #e5e7eb",
   boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
 },
-  table: { width: "100%", borderCollapse: "collapse" },
+ table: {
+  width: "100%",
+  minWidth: 900,
+  borderCollapse: "collapse",
+},
   thead: { background: "#f9fafb" },
   th: { padding: "12px 16px", textAlign: "left", fontSize: 12, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid #e5e7eb" },
   tr: { borderBottom: "1px solid #f3f4f6" },
