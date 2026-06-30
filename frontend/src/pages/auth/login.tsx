@@ -34,7 +34,7 @@ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         localStorage.setItem("accessToken", data.data.accessToken);
         localStorage.setItem("user", JSON.stringify(data.data.user));
 
-        window.location.href = "/dashboard";
+        window.location.href = "/reportdashboard";
 
     } catch (err: any) {
         setError(err.message || "Login failed.");

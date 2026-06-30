@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/auth/login";
-import Dashboard from "./pages/admin/dashboard";
+import ReportDashboard from "./pages/admin/reportdashboard";
+//import Dashboard from "./pages/admin/dashboard";
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("accessToken");
@@ -23,10 +24,10 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         <Route
-          path="/dashboard"
+          path="/reportdashboard"
           element={
             <PrivateRoute>
-              <Dashboard
+              <ReportDashboard
                 user={user}
                 onLogout={handleLogout}
               />
