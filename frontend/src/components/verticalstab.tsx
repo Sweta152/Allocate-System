@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { CSSProperties } from "react";
 
 interface Vertical {
@@ -31,12 +31,28 @@ const initialData: Vertical[] = [
   { id: 14, name: "Billings (S/R/R)", time: 10, lastUpdate: "05/01/2026 09:36", modifiedBy: "Developer" },
 ];
 
+const MOBILE_BREAKPOINT = 768;
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth < MOBILE_BREAKPOINT : false
+  );
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return isMobile;
+}
+
 export default function VerticalsTab() {
   const [data, setData] = useState<Vertical[]>(initialData);
   const [search, setSearch] = useState<string>("");
   const [showModal, setShowModal] = useState<boolean>(false);
   const [editItem, setEditItem] = useState<Vertical | null>(null);
   const [form, setForm] = useState<VerticalForm>({ name: "", time: "" });
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const isMobile = useIsMobile();
 
   const filtered = data.filter((d) =>
     d.name.toLowerCase().includes(search.toLowerCase())
@@ -78,11 +94,22 @@ export default function VerticalsTab() {
     setShowModal(false);
   };
 
+  // Refresh: clears search filter and re-syncs the table.
+  // Replace the inner setData(initialData) with a real API refetch when wired to a backend.
+  const handleRefresh = (): void => {
+    setIsRefreshing(true);
+    setSearch("");
+    setTimeout(() => {
+      setData(initialData);
+      setIsRefreshing(false);
+    }, 400);
+  };
+
   return (
     <div style={styles.wrap}>
       {/* Toolbar */}
-      <div style={styles.toolbar}>
-        <div style={styles.searchBox}>
+      <div style={isMobile ? styles.toolbarMobile : styles.toolbar}>
+        <div style={isMobile ? styles.searchBoxMobile : styles.searchBox}>
           <span style={styles.searchIcon}>🔍</span>
           <input
             style={styles.searchInput}
@@ -91,9 +118,20 @@ export default function VerticalsTab() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div style={styles.toolRight}>
-          <button style={styles.refreshBtn}>↻ Refresh</button>
-          <button style={styles.newBtn} onClick={handleNew}>+ New</button>
+        <div style={isMobile ? styles.toolRightMobile : styles.toolRight}>
+          <button
+            style={{ ...styles.refreshBtn, ...(isMobile ? styles.btnFlexMobile : {}) }}
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+          >
+            <span style={isRefreshing ? styles.spinning : undefined}>↻</span> Refresh
+          </button>
+          <button
+            style={{ ...styles.newBtn, ...(isMobile ? styles.btnFlexMobile : {}) }}
+            onClick={handleNew}
+          >
+            + New
+          </button>
         </div>
       </div>
 
@@ -110,20 +148,26 @@ export default function VerticalsTab() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((row, i) => (
-              <tr key={row.id} style={{ ...styles.tr, background: i % 2 === 0 ? "#fff" : "#fafafa" }}>
-                <td style={styles.td}>{row.name}</td>
-                <td style={styles.td}>{row.time} (Minutes)</td>
-                <td style={styles.td}>{row.lastUpdate}</td>
-                <td style={styles.td}>{row.modifiedBy}</td>
-                <td style={styles.td}>
-                  <div style={styles.actions}>
-                    <button style={styles.editBtn} onClick={() => handleEdit(row)}>✏ Edit</button>
-                    <button style={styles.delBtn} onClick={() => handleDelete(row.id)}>🗑</button>
-                  </div>
-                </td>
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan={5} style={styles.emptyState}>No verticals found.</td>
               </tr>
-            ))}
+            ) : (
+              filtered.map((row, i) => (
+                <tr key={row.id} style={{ ...styles.tr, background: i % 2 === 0 ? "#fff" : "#fafafa" }}>
+                  <td style={styles.td}>{row.name}</td>
+                  <td style={styles.td}>{row.time} (Minutes)</td>
+                  <td style={styles.td}>{row.lastUpdate}</td>
+                  <td style={styles.td}>{row.modifiedBy}</td>
+                  <td style={styles.td}>
+                    <div style={styles.actions}>
+                      <button style={styles.editBtn} onClick={() => handleEdit(row)}>✏ Edit</button>
+                      <button style={styles.delBtn} onClick={() => handleDelete(row.id)}>🗑</button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -131,7 +175,7 @@ export default function VerticalsTab() {
       {/* Modal */}
       {showModal && (
         <div style={styles.overlay}>
-          <div style={styles.modal}>
+          <div style={isMobile ? styles.modalMobile : styles.modal}>
             <h3 style={styles.modalTitle}>{editItem ? "Edit Vertical" : "New Vertical"}</h3>
             <div style={styles.modalField}>
               <label style={styles.modalLabel}>Vertical Name</label>
@@ -164,28 +208,18 @@ export default function VerticalsTab() {
 }
 
 const styles: Record<string, CSSProperties> = {
- wrap: {
-  display: "flex",
-  flexDirection: "column",
-  gap: 16,
-  width: "100%",
-  minWidth: 0,
-},
-  toolbar: {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: 12,
-  width: "100%",
-},
-  searchBox: {
-    display: "flex", alignItems: "center", gap: 8, background: "#f3f4f6",
-    borderRadius: 8, padding: "8px 14px", flex: 1, maxWidth: 320,
-  },
+  wrap: { display: "flex", flexDirection: "column", gap: 16, width: "100%", minWidth: 0 },
+  toolbar: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, width: "100%" },
+  toolbarMobile: { display: "flex", flexDirection: "column", gap: 10, width: "100%" },
+  searchBox: { display: "flex", alignItems: "center", gap: 8, background: "#f3f4f6", borderRadius: 8, padding: "8px 14px", flex: 1, maxWidth: 320 },
+  searchBoxMobile: { display: "flex", alignItems: "center", gap: 8, background: "#f3f4f6", borderRadius: 8, padding: "10px 14px", width: "100%" },
   searchIcon: { fontSize: 14, color: "#6b7280" },
   searchInput: { border: "none", background: "transparent", outline: "none", fontSize: 14, color: "#111", width: "100%" },
   toolRight: { display: "flex", gap: 8 },
+  toolRightMobile: { display: "flex", gap: 8, width: "100%" },
+  btnFlexMobile: { flex: 1, justifyContent: "center", padding: "10px 12px" },
   refreshBtn: {
+    display: "inline-flex", alignItems: "center", gap: 6,
     padding: "8px 16px", borderRadius: 6, border: "1.5px solid #d1d5db",
     background: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#374151",
   },
@@ -194,27 +228,27 @@ const styles: Record<string, CSSProperties> = {
     background: "linear-gradient(135deg, #e53935, #c62828)",
     color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 700,
   },
- tableWrap: {
-  width: "100%",
-  overflowX: "auto",
-  borderRadius: 10,
-  border: "1px solid #e5e7eb",
-  boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-},
- table: {
-  width: "100%",
-  minWidth: 900,
-  borderCollapse: "collapse",
-},
+  spinning: { display: "inline-block", animation: "spin 0.6s linear infinite" },
+  tableWrap: {
+    width: "100%",
+    overflowX: "auto",
+    borderRadius: 10,
+    border: "1px solid #e5e7eb",
+    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+    WebkitOverflowScrolling: "touch",
+  },
+  table: { width: "100%", minWidth: 900, borderCollapse: "collapse" },
   thead: { background: "#f9fafb" },
-  th: { padding: "12px 16px", textAlign: "left", fontSize: 12, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid #e5e7eb" },
+  th: { padding: "12px 16px", textAlign: "left", fontSize: 12, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid #e5e7eb", whiteSpace: "nowrap" },
   tr: { borderBottom: "1px solid #f3f4f6" },
-  td: { padding: "11px 16px", fontSize: 13, color: "#374151" },
+  td: { padding: "11px 16px", fontSize: 13, color: "#374151", whiteSpace: "nowrap" },
+  emptyState: { padding: "32px 16px", textAlign: "center", fontSize: 13, color: "#9ca3af" },
   actions: { display: "flex", gap: 8, alignItems: "center" },
   editBtn: { padding: "5px 12px", borderRadius: 5, border: "none", background: "#e53935", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 600 },
   delBtn: { padding: "5px 9px", borderRadius: 5, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer", fontSize: 13 },
-  overlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200 },
+  overlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: 16 },
   modal: { background: "#fff", borderRadius: 12, padding: "32px", width: 420, boxShadow: "0 20px 60px rgba(0,0,0,0.25)" },
+  modalMobile: { background: "#fff", borderRadius: 12, padding: "24px 20px", width: "100%", maxWidth: 420, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.25)" },
   modalTitle: { margin: "0 0 24px", fontSize: 18, fontWeight: 700, color: "#1a1a2e" },
   modalField: { display: "flex", flexDirection: "column", gap: 6, marginBottom: 18 },
   modalLabel: { fontSize: 13, fontWeight: 600, color: "#374151" },
