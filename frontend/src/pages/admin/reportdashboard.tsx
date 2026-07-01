@@ -50,7 +50,12 @@ export default function ReportDashboard() {
         setVerticalsLoading(true);
         setVerticalsError(null);
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/verticals/case-counts`);
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/verticals/case-counts`, {
+                cache: "no-store",
+                headers: {
+                    "Cache-Control": "no-cache",
+                },
+            });
             if (!res.ok) throw new Error(`Request failed: ${res.status}`);
             const data: VerticalCase[] = await res.json();
             setVerticalCases(data);
@@ -61,7 +66,7 @@ export default function ReportDashboard() {
             setVerticalsLoading(false);
         }
     };
-  
+
     useEffect(() => {
         fetchVerticalCases();
     }, []);
@@ -150,27 +155,27 @@ export default function ReportDashboard() {
                         </div>
 
                         <div style={styles.rightCol}>
-    <div style={styles.tableHead}>
-        <span style={styles.tableHeadLabel}>Vertical Name</span>
-        <span style={styles.tableHeadLabel}>Total Number of Vertical Cases</span>
-    </div>
-    <div style={styles.tableBody}>
-        {verticalsLoading ? (
-            <div style={styles.emptyState}>Loading vertical data...</div>
-        ) : verticalsError ? (
-            <div style={styles.emptyState}>{verticalsError}</div>
-        ) : verticalCases.length === 0 ? (
-            <div style={styles.emptyState}>No vertical data yet</div>
-        ) : (
-            verticalCases.map((v) => (
-                <div key={v.name} style={styles.tableRow}>
-                    <span>{v.name}</span>
-                    <span>{v.count}</span>
-                </div>
-            ))
-        )}
-    </div>
-</div>
+                            <div style={styles.tableHead}>
+                                <span style={styles.tableHeadLabel}>Vertical Name</span>
+                                <span style={styles.tableHeadLabel}>Total Number of Vertical Cases</span>
+                            </div>
+                            <div style={styles.tableBody}>
+                                {verticalsLoading ? (
+                                    <div style={styles.emptyState}>Loading vertical data...</div>
+                                ) : verticalsError ? (
+                                    <div style={styles.emptyState}>{verticalsError}</div>
+                                ) : verticalCases.length === 0 ? (
+                                    <div style={styles.emptyState}>No vertical data yet</div>
+                                ) : (
+                                    verticalCases.map((v) => (
+                                        <div key={v.name} style={styles.tableRow}>
+                                            <span>{v.name}</span>
+                                            <span>{v.count}</span>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -334,7 +339,7 @@ const styles: Record<string, CSSProperties> = {
         gap: "14px",
         flex: 1,
         minWidth: 0,
-         alignItems: "start", // 👈 added, removed flex: 1
+        alignItems: "start", // 👈 added, removed flex: 1
     },
     contentRowMobile: {
         display: "flex",
@@ -368,7 +373,7 @@ const styles: Record<string, CSSProperties> = {
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
-         maxHeight: "600px", // 👈 added
+        maxHeight: "600px", // 👈 added
     },
     tableHead: {
         display: "flex",
@@ -379,8 +384,10 @@ const styles: Record<string, CSSProperties> = {
         gap: "12px",
     },
     tableHeadLabel: { fontSize: "12px", fontWeight: 600, color: "#a32d2d" },
-    tableBody: { flex: 1, display: "flex", flexDirection: "column" , overflowY: "auto",  // 👈 added
-    WebkitOverflowScrolling: "touch",},
+    tableBody: {
+        flex: 1, display: "flex", flexDirection: "column", overflowY: "auto",  // 👈 added
+        WebkitOverflowScrolling: "touch",
+    },
     tableRow: {
         display: "flex",
         justifyContent: "space-between",
