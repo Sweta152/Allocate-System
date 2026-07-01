@@ -7,15 +7,6 @@ const fetch = require("node-fetch");
 
 const app = express();
 
-// CORS FIRST
-app.use(cors({
-  origin: true,
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
-
-app.options("*", cors());
 
 
 // ========================
