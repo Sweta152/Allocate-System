@@ -1,4 +1,4 @@
-const supabase_url = require("../../config/db");
+const getSupabaseClientsupabas = require("../../config/db");
 
 async function getVerticalCaseCounts() {
   const supabase = getSupabaseClient(); // fresh client each time
