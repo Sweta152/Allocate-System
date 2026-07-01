@@ -1,4 +1,4 @@
-const getSupabaseClientsupabas = require("../../config/db");
+const ggetSupabaseClient = require("../../config/db");
 
 async function getVerticalCaseCounts() {
   const supabase = getSupabaseClient(); // fresh client each time
@@ -17,4 +17,4 @@ async function getVerticalCaseCounts() {
   }));
 }
 
-module.exports = { getVerticalCaseCounts };
+module.exports = { getVerticalCaseCounts }; 
