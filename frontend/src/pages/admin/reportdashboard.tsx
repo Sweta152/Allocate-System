@@ -48,6 +48,7 @@ export default function ReportDashboard() {
 
     const fetchVerticalCases = async () => {
         setVerticalsLoading(true);
+          console.log("Fetching from:", `${import.meta.env.VITE_API_URL}/api/verticals/case-counts`); // 👈 add
         setVerticalsError(null);
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/verticals/case-counts`, {
