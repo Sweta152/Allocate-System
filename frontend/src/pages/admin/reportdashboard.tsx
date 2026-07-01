@@ -52,9 +52,7 @@ export default function ReportDashboard() {
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/verticals/case-counts`, {
                 cache: "no-store",
-                headers: {
-                    "Cache-Control": "no-cache",
-                },
+                
             });
             if (!res.ok) throw new Error(`Request failed: ${res.status}`);
             const data: VerticalCase[] = await res.json();
@@ -80,6 +78,8 @@ export default function ReportDashboard() {
     const handleRefresh = () => {
         fetchVerticalCases();
     };
+
+    console.log("verticalCases state:", verticalCases.length);
     return (
         <div style={isMobile ? styles.rootMobile : styles.root}>
 
