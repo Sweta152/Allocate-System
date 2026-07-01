@@ -3,11 +3,8 @@ require("dotenv").config();
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
-const fetch = require("node-fetch");
 
 const app = express();
-
-
 
 // ========================
 // 🔐 Security middleware
@@ -59,9 +56,6 @@ app.get("/api/health", (req, res) => {
 // 🚀 START SERVER
 // ========================
 const PORT = process.env.PORT || 3001;
-
-
-
 
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
