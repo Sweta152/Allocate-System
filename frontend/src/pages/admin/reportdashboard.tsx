@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import type { CSSProperties } from "react";
 import Sidebar from "../../components/sidebar";
 import Header from "../../components/header";
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 interface StatCardData {
     title: string;
@@ -46,31 +47,31 @@ export default function ReportDashboard() {
     const [verticalsLoading, setVerticalsLoading] = useState(true);
     const [verticalsError, setVerticalsError] = useState<string | null>(null);
 
-   const fetchVerticalCases = async () => {
-    setVerticalsLoading(true);
-    setVerticalsError(null);
-    try {
-        const timestamp = new Date().getTime();
-        const res = await fetch(
-            `${import.meta.env.VITE_API_URL}/api/verticals/case-counts?t=${timestamp}`,
-            {
-                cache: "no-store",
-                headers: {
-                    "Cache-Control": "no-cache",
-                    "Pragma": "no-cache",
+    const fetchVerticalCases = async () => {
+        setVerticalsLoading(true);
+        setVerticalsError(null);
+        try {
+            const timestamp = new Date().getTime();
+            const res = await fetch(
+                `${import.meta.env.VITE_API_URL}/api/verticals/case-counts?t=${timestamp}`,
+                {
+                    cache: "no-store",
+                    headers: {
+                        "Cache-Control": "no-cache",
+                        "Pragma": "no-cache",
+                    }
                 }
-            }
-        );
-        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-        const data: VerticalCase[] = await res.json();
-        setVerticalCases(data);
-    } catch (err) {
-        console.error("Failed to fetch vertical case counts:", err);
-        setVerticalsError("Couldn't load vertical case data.");
-    } finally {
-        setVerticalsLoading(false);
-    }
-};
+            );
+            if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+            const data: VerticalCase[] = await res.json();
+            setVerticalCases(data);
+        } catch (err) {
+            console.error("Failed to fetch vertical case counts:", err);
+            setVerticalsError("Couldn't load vertical case data.");
+        } finally {
+            setVerticalsLoading(false);
+        }
+    };
 
     useEffect(() => {
         fetchVerticalCases();
@@ -157,7 +158,9 @@ export default function ReportDashboard() {
 
                             <div style={styles.panel}>
                                 <p style={styles.panelTitle}>Work Progress Report</p>
-                                <div style={styles.emptyState}>No data yet</div>
+                                <div style={styles.chartPlaceholder}>
+                                    <WorkProgressChart />
+                                </div>
                             </div>
                         </div>
 
@@ -209,18 +212,69 @@ function StatCard({ title, today, total }: StatCardData) {
     );
 }
 
+const billableData = [
+    { name: "Completed", value: 400 },
+    { name: "Pending", value: 300 },
+    { name: "In Progress", value: 200 },
+    { name: "Cancelled", value: 100 },
+];
+
+const PIE_COLORS = ["#e24b4a", "#2b2b3d", "#185fa5", "#f4a93c"];
 // Simple inline line chart placeholder — swap for a real charting library (recharts, chart.js) once data is wired up
 function BillableChart() {
     return (
-        <svg viewBox="0 0 300 140" style={{ width: "100%", height: "100%" }}>
-            <polyline
-                points="0,130 60,125 120,128 180,90 240,40 300,20"
-                fill="none"
-                stroke="#e24b4a"
-                strokeWidth="2"
-            />
-            <line x1="0" y1="135" x2="300" y2="135" stroke="#eee" strokeWidth="1" />
-        </svg>
+        <ResponsiveContainer width="100%" height={180}>
+            <PieChart>
+                <Pie
+                    data={billableData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={35}
+                    outerRadius={60}
+                    paddingAngle={3}
+                    dataKey="value"
+                >
+                    {billableData.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                    ))}
+                </Pie>
+                <Tooltip />
+                <Legend iconSize={10} wrapperStyle={{ fontSize: "11px" }} />
+            </PieChart>
+        </ResponsiveContainer>
+    );
+}
+
+const workProgressData = [
+    { name: "Done", value: 540 },
+    { name: "In Review", value: 220 },
+    { name: "In Progress", value: 310 },
+    { name: "Not Started", value: 130 },
+];
+
+const WORK_COLORS = ["#3B6D11", "#185fa5", "#f4a93c", "#9ca3af"];
+
+function WorkProgressChart() {
+    return (
+        <ResponsiveContainer width="100%" height={180}>
+            <PieChart>
+                <Pie
+                    data={workProgressData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={35}
+                    outerRadius={60}
+                    paddingAngle={3}
+                    dataKey="value"
+                >
+                    {workProgressData.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={WORK_COLORS[index % WORK_COLORS.length]} />
+                    ))}
+                </Pie>
+                <Tooltip />
+                <Legend iconSize={10} wrapperStyle={{ fontSize: "11px" }} />
+            </PieChart>
+        </ResponsiveContainer>
     );
 }
 
@@ -362,7 +416,7 @@ const styles: Record<string, CSSProperties> = {
         textAlign: "center",
         margin: "0 0 8px",
     },
-    chartPlaceholder: { height: 140 },
+    chartPlaceholder: { height: 180 },
     emptyState: {
         flex: 1,
         display: "flex",
