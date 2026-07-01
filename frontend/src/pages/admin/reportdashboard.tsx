@@ -48,30 +48,39 @@ export default function ReportDashboard() {
     const [verticalsError, setVerticalsError] = useState<string | null>(null);
 
     const fetchVerticalCases = async () => {
-        setVerticalsLoading(true);
-        setVerticalsError(null);
-        try {
-            const timestamp = new Date().getTime();
-            const res = await fetch(
-                `${import.meta.env.VITE_API_URL}/api/verticals/case-counts?t=${timestamp}`,
-                {
-                    cache: "no-store",
-                    headers: {
-                        "Cache-Control": "no-cache",
-                        "Pragma": "no-cache",
-                    }
-                }
-            );
-            if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-            const data: VerticalCase[] = await res.json();
-            setVerticalCases(data);
-        } catch (err) {
-            console.error("Failed to fetch vertical case counts:", err);
-            setVerticalsError("Couldn't load vertical case data.");
-        } finally {
-            setVerticalsLoading(false);
+    setVerticalsLoading(true);
+    setVerticalsError(null);
+
+    try {
+        const res = await fetch(
+            `${import.meta.env.VITE_API_URL}/api/verticals/case-counts`,
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
         }
-    };
+
+        const result = await res.json();
+
+        // Support both array response and {data: []} response
+        const data = Array.isArray(result) ? result : result.data || [];
+
+        setVerticalCases(data);
+    } catch (err) {
+        console.error("Vertical API Error:", err);
+        setVerticalsError(
+            err instanceof Error ? err.message : "Failed to load data."
+        );
+    } finally {
+        setVerticalsLoading(false);
+    }
+};
 
     useEffect(() => {
         fetchVerticalCases();
@@ -164,28 +173,38 @@ export default function ReportDashboard() {
                             </div>
                         </div>
 
-                        <div style={styles.rightCol}>
-                            <div style={styles.tableHead}>
-                                <span style={styles.tableHeadLabel}>Vertical Name</span>
-                                <span style={styles.tableHeadLabel}>Total Number of Vertical Cases</span>
-                            </div>
-                            <div style={styles.tableBody}>
-                                {verticalsLoading ? (
-                                    <div style={styles.emptyState}>Loading vertical data...</div>
-                                ) : verticalsError ? (
-                                    <div style={styles.emptyState}>{verticalsError}</div>
-                                ) : verticalCases.length === 0 ? (
-                                    <div style={styles.emptyState}>No vertical data yet</div>
-                                ) : (
-                                    verticalCases.map((v) => (
-                                        <div key={v.name} style={styles.tableRow}>
-                                            <span>{v.name}</span>
-                                            <span>{v.count}</span>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
+                      <div style={styles.rightCol}>
+    <div style={styles.tableHead}>
+        <span style={styles.tableHeadLabel}>Vertical Name</span>
+        <span style={styles.tableHeadLabel}>Total Number of Vertical Cases</span>
+    </div>
+
+    <div style={styles.tableBody}>
+        {verticalsLoading ? (
+            <div style={styles.emptyState}>
+                Loading vertical data...
+            </div>
+        ) : verticalsError ? (
+            <div style={styles.emptyState}>
+                {verticalsError}
+            </div>
+        ) : !verticalCases || verticalCases.length === 0 ? (
+            <div style={styles.emptyState}>
+                No vertical data found.
+            </div>
+        ) : (
+            verticalCases.map((v: any, index: number) => (
+                <div
+                    key={index}
+                    style={styles.tableRow}
+                >
+                    <span>{v.name || v.Title || "-"}</span>
+                    <span>{v.count || v.vertical_TotalCases || 0}</span>
+                </div>
+            ))
+        )}
+    </div>
+</div>
                     </div>
                 </div>
             </div>
@@ -428,14 +447,12 @@ const styles: Record<string, CSSProperties> = {
         minHeight: 140,
     },
 
-    rightCol: {
-        background: "#fff",
-        borderRadius: "8px",
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
-        maxHeight: "600px", // 👈 added
-    },
+   rightCol: {
+    background: "#fff",
+    borderRadius: "8px",
+    overflow: "hidden",
+    minHeight: "400px",
+},
     tableHead: {
         display: "flex",
         justifyContent: "space-between",
@@ -446,9 +463,10 @@ const styles: Record<string, CSSProperties> = {
     },
     tableHeadLabel: { fontSize: "12px", fontWeight: 600, color: "#a32d2d" },
     tableBody: {
-        flex: 1, display: "flex", flexDirection: "column", overflowY: "auto",  // 👈 added
-        WebkitOverflowScrolling: "touch",
-    },
+    display: "block",
+    overflowY: "auto",
+    maxHeight: "500px",
+},
     tableRow: {
         display: "flex",
         justifyContent: "space-between",
