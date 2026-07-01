@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
+const fetch = require("node-fetch");
 
 const app = express();
 
@@ -56,6 +57,15 @@ app.get("/api/health", (req, res) => {
 // 🚀 START SERVER
 // ========================
 const PORT = process.env.PORT || 3001;
+
+
+// Keep Render free tier awake — ping every 14 minutes
+const RENDER_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+setInterval(() => {
+  fetch(`${RENDER_URL}/api/health`)
+    .then(() => console.log("Keep-alive ping sent"))
+    .catch((err) => console.log("Keep-alive failed:", err.message));
+}, 14 * 60 * 1000);
 
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
