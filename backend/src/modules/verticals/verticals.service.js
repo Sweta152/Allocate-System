@@ -1,13 +1,11 @@
-const supabase = require("../../config/db");
+const getSupabaseClient = require("../../config/db");
 
 async function getVerticalCaseCounts() {
+  const supabase = getSupabaseClient(); // fresh client each time
   const { data, error } = await supabase
     .from("vertical_master")
     .select("Title, vertical_TotalCases")
     .order("Title", { ascending: true });
-
-    console.log("DATA:", JSON.stringify(data));  // 👈 add this
-  console.log("ERROR:", JSON.stringify(error)); // 👈 add this
 
   if (error) {
     throw new Error(`Failed to fetch vertical_master: ${error.message}`);
