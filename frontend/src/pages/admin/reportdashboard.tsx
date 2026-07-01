@@ -21,8 +21,7 @@ const statCards: StatCardData[] = [
     { title: "No of user", today: 0, total: 0 },
 ];
 
-// Replace with real data from your API
-//const verticalCases: VerticalCase[] = [];
+
 
 const MOBILE_BREAKPOINT = 768;
 
@@ -280,14 +279,14 @@ const styles: Record<string, CSSProperties> = {
         minWidth: 0,
         display: "flex",
         flexDirection: "column",
-        overflowY: "auto",
+        overflowY: "hidden",
     },
     contentColMobile: {
         flex: 1,
         minWidth: 0,
         display: "flex",
         flexDirection: "column",
-        overflowY: "auto",
+        overflowY: "hidden",
     },
     contentBody: {
         display: "flex",
@@ -335,6 +334,7 @@ const styles: Record<string, CSSProperties> = {
         gap: "14px",
         flex: 1,
         minWidth: 0,
+         alignItems: "start", // 👈 added, removed flex: 1
     },
     contentRowMobile: {
         display: "flex",
@@ -368,6 +368,7 @@ const styles: Record<string, CSSProperties> = {
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
+         maxHeight: "600px", // 👈 added
     },
     tableHead: {
         display: "flex",
@@ -378,7 +379,8 @@ const styles: Record<string, CSSProperties> = {
         gap: "12px",
     },
     tableHeadLabel: { fontSize: "12px", fontWeight: 600, color: "#a32d2d" },
-    tableBody: { flex: 1, display: "flex", flexDirection: "column" },
+    tableBody: { flex: 1, display: "flex", flexDirection: "column" , overflowY: "auto",  // 👈 added
+    WebkitOverflowScrolling: "touch",},
     tableRow: {
         display: "flex",
         justifyContent: "space-between",
