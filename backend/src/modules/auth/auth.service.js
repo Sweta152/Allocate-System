@@ -1,6 +1,7 @@
-const supabase = require('../../config/db')
+const getSupabaseClient = require('../../config/db')
 
 const login = async (email, password) => {
+  const supabase = getSupabaseClient();
 
      console.log('Login attempt:', email, password) // ← ye add karo
   // Supabase handles authentication
