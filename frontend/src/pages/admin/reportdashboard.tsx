@@ -50,7 +50,7 @@ export default function ReportDashboard() {
         setVerticalsLoading(true);
         setVerticalsError(null);
         try {
-            const res = await fetch("/api/verticals/case-counts");
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/verticals/case-counts`);
             if (!res.ok) throw new Error(`Request failed: ${res.status}`);
             const data: VerticalCase[] = await res.json();
             setVerticalCases(data);
@@ -61,7 +61,7 @@ export default function ReportDashboard() {
             setVerticalsLoading(false);
         }
     };
-
+  
     useEffect(() => {
         fetchVerticalCases();
     }, []);
