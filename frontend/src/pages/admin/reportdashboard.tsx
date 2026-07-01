@@ -46,25 +46,31 @@ export default function ReportDashboard() {
     const [verticalsLoading, setVerticalsLoading] = useState(true);
     const [verticalsError, setVerticalsError] = useState<string | null>(null);
 
-    const fetchVerticalCases = async () => {
-        setVerticalsLoading(true);
-          console.log("Fetching from:", `${import.meta.env.VITE_API_URL}/api/verticals/case-counts`); // 👈 add
-        setVerticalsError(null);
-        try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/verticals/case-counts`, {
+   const fetchVerticalCases = async () => {
+    setVerticalsLoading(true);
+    setVerticalsError(null);
+    try {
+        const timestamp = new Date().getTime();
+        const res = await fetch(
+            `${import.meta.env.VITE_API_URL}/api/verticals/case-counts?t=${timestamp}`,
+            {
                 cache: "no-store",
-                
-            });
-            if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-            const data: VerticalCase[] = await res.json();
-            setVerticalCases(data);
-        } catch (err) {
-            console.error("Failed to fetch vertical case counts:", err);
-            setVerticalsError("Couldn't load vertical case data.");
-        } finally {
-            setVerticalsLoading(false);
-        }
-    };
+                headers: {
+                    "Cache-Control": "no-cache",
+                    "Pragma": "no-cache",
+                }
+            }
+        );
+        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+        const data: VerticalCase[] = await res.json();
+        setVerticalCases(data);
+    } catch (err) {
+        console.error("Failed to fetch vertical case counts:", err);
+        setVerticalsError("Couldn't load vertical case data.");
+    } finally {
+        setVerticalsLoading(false);
+    }
+};
 
     useEffect(() => {
         fetchVerticalCases();
