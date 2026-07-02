@@ -1,70 +1,72 @@
-const getSupabaseClient = require('../../config/db')
+const jwt = require("jsonwebtoken");
+const getSupabaseClient = require("../../config/db");
 
 const login = async (email, password) => {
   const supabase = getSupabaseClient();
 
-     console.log('Login attempt:', email, password) // ← ye add karo
-  // Supabase handles authentication
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password
-  })
+  console.log("Login attempt:", email);
 
-  if (error) throw new Error('Invalid email or password')
+  console.log("===== ADMIN LOGIN =====");
+console.log("Email:", email);
 
-  // Get user details from our users table
-  const { data: userData } = await supabase
-    .from('users')
-    .select('*, profiles(*)')
-    .eq('id', data.user.id)
-    .single()
+  // Find admin by email
+  const { data: admin, error } = await supabase
+    .from("admin_login")
+    .select("*")
+    .eq("Admin Email", email)
+    .single();
+
+  if (error || !admin) {
+    throw new Error("Invalid email or password");
+  }
+
+  // Check password
+
+
+  const bcrypt = require("bcryptjs");
+
+const isMatch = await bcrypt.compare(
+  password,
+  admin["Admin Password"]
+);
+
+if (!isMatch) {
+  throw new Error("Invalid email or password");
+} {
+
+
+    throw new Error("Invalid email or password");
+  }
+
+  // Generate JWT
+  const accessToken = jwt.sign(
+    {
+      email: admin["Admin Email"],
+      role: admin["Admin Role"],
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "8h",
+    }
+  );
 
   return {
-    accessToken: data.session.access_token,
-    refreshToken: data.session.refresh_token,
+    accessToken,
     user: {
-      id: data.user.id,
-      email: data.user.email,
-      role: userData?.role || 'EMPLOYEE',
-      firstName: userData?.profiles?.first_name || '',
-      lastName: userData?.profiles?.last_name || '',
-      department: userData?.profiles?.department || '',
-      position: userData?.profiles?.position || '',
-    }
-  }
-}
+      email: admin["Admin Email"],
+      role: admin["Admin Role"],
+      name: admin["Admin Name"],
+      team: admin["Team Name"],
+    },
+  };
+};
 
-const registerEmployee = async ({ email, password, firstName, lastName, department, position, managerId }) => {
-  // Create auth user in Supabase
-  const { data, error } = await supabase.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true
-  })
+// Keep your existing function if needed
+const registerEmployee = async () => {
+  throw new Error("Employee registration is disabled.");
+};
 
-  if (error) throw new Error(error.message)
-
-  const userId = data.user.id
-
-  // Add to our users table
-  await supabase.from('users').insert({
-    id: userId,
-    email,
-    role: 'EMPLOYEE',
-    manager_id: managerId,
-    is_active: true
-  })
-
-  // Add profile
-  await supabase.from('profiles').insert({
-    user_id: userId,
-    first_name: firstName,
-    last_name: lastName,
-    department,
-    position
-  })
-
-  return { userId, email }
-}
-
-module.exports = { login, registerEmployee }
+module.exports = {
+  login,
+  registerEmployee,
+};
