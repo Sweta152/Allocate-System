@@ -1,43 +1,30 @@
-const jwt = require("jsonwebtoken");
-const getSupabaseClient = require("../../config/db");
 
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const getSupabaseClient = require("../../config/db");
+ 
 const login = async (email, password) => {
   const supabase = getSupabaseClient();
-
   console.log("Login attempt:", email);
-
-  console.log("===== ADMIN LOGIN =====");
-console.log("Email:", email);
-
-  // Find admin by email
+ 
+  // Find admin by email in admin_login table
   const { data: admin, error } = await supabase
     .from("admin_login")
     .select("*")
     .eq("Admin Email", email)
     .single();
-
+ 
   if (error || !admin) {
     throw new Error("Invalid email or password");
   }
-
+ 
   // Check password
-
-
-  const bcrypt = require("bcryptjs");
-
-const isMatch = await bcrypt.compare(
-  password,
-  admin["Admin Password"]
-);
-
-if (!isMatch) {
-  throw new Error("Invalid email or password");
-} {
-
-
+  const isMatch = await bcrypt.compare(password, admin["Admin Password"]);
+ 
+  if (!isMatch) {
     throw new Error("Invalid email or password");
   }
-
+ 
   // Generate JWT
   const accessToken = jwt.sign(
     {
@@ -45,11 +32,9 @@ if (!isMatch) {
       role: admin["Admin Role"],
     },
     process.env.JWT_SECRET,
-    {
-      expiresIn: "8h",
-    }
+    { expiresIn: "8h" }
   );
-
+ 
   return {
     accessToken,
     user: {
@@ -60,13 +45,9 @@ if (!isMatch) {
     },
   };
 };
-
-// Keep your existing function if needed
+ 
 const registerEmployee = async () => {
   throw new Error("Employee registration is disabled.");
 };
-
-module.exports = {
-  login,
-  registerEmployee,
-};
+ 
+module.exports = { login, registerEmployee };
