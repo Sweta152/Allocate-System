@@ -50,33 +50,24 @@ export default function ReportDashboard() {
     const fetchVerticalCases = async () => {
     setVerticalsLoading(true);
     setVerticalsError(null);
-
     try {
-        const res = await fetch(
-            `${import.meta.env.VITE_API_URL}/api/verticals/case-counts`,
-            {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }
-        );
-
-        if (!res.ok) {
-            throw new Error(`HTTP ${res.status}`);
-        }
-
-        const result = await res.json();
-
-        // Support both array response and {data: []} response
-        const data = Array.isArray(result) ? result : result.data || [];
-
-        setVerticalCases(data);
-    } catch (err) {
-        console.error("Vertical API Error:", err);
-        setVerticalsError(
-            err instanceof Error ? err.message : "Failed to load data."
-        );
+        const timestamp = new Date().getTime();
+     const res = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/verticals/case-counts?t=${timestamp}`,
+    {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            // Remove "Cache-Control" — backend CORS doesn't allow it
+        },
+    }
+);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data: VerticalCase[] = await res.json(); // only once
+        setVerticalCases(data); // only once
+    } catch (err: any) {
+        console.error("Failed to fetch vertical case counts:", err);
+        setVerticalsError(err?.message || "Failed to load data.");
     } finally {
         setVerticalsLoading(false);
     }
@@ -173,38 +164,38 @@ export default function ReportDashboard() {
                             </div>
                         </div>
 
-                      <div style={styles.rightCol}>
-    <div style={styles.tableHead}>
-        <span style={styles.tableHeadLabel}>Vertical Name</span>
-        <span style={styles.tableHeadLabel}>Total Number of Vertical Cases</span>
-    </div>
+                        <div style={styles.rightCol}>
+                            <div style={styles.tableHead}>
+                                <span style={styles.tableHeadLabel}>Vertical Name</span>
+                                <span style={styles.tableHeadLabel}>Total Number of Vertical Cases</span>
+                            </div>
 
-    <div style={styles.tableBody}>
-        {verticalsLoading ? (
-            <div style={styles.emptyState}>
-                Loading vertical data...
-            </div>
-        ) : verticalsError ? (
-            <div style={styles.emptyState}>
-                {verticalsError}
-            </div>
-        ) : !verticalCases || verticalCases.length === 0 ? (
-            <div style={styles.emptyState}>
-                No vertical data found.
-            </div>
-        ) : (
-            verticalCases.map((v: any, index: number) => (
-                <div
-                    key={index}
-                    style={styles.tableRow}
-                >
-                    <span>{v.name || v.Title || "-"}</span>
-                    <span>{v.count || v.vertical_TotalCases || 0}</span>
-                </div>
-            ))
-        )}
-    </div>
-</div>
+                            <div style={styles.tableBody}>
+                                {verticalsLoading ? (
+                                    <div style={styles.emptyState}>
+                                        Loading vertical data...
+                                    </div>
+                                ) : verticalsError ? (
+                                    <div style={styles.emptyState}>
+                                        {verticalsError}
+                                    </div>
+                                ) : !verticalCases || verticalCases.length === 0 ? (
+                                    <div style={styles.emptyState}>
+                                        No vertical data found.
+                                    </div>
+                                ) : (
+                                    verticalCases.map((v: any, index: number) => (
+                                        <div
+                                            key={index}
+                                            style={styles.tableRow}
+                                        >
+                                            <span>{v.name || v.Title || "-"}</span>
+                                            <span>{v.count || v.vertical_TotalCases || 0}</span>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -447,12 +438,12 @@ const styles: Record<string, CSSProperties> = {
         minHeight: 140,
     },
 
-   rightCol: {
-    background: "#fff",
-    borderRadius: "8px",
-    overflow: "hidden",
-    minHeight: "400px",
-},
+    rightCol: {
+        background: "#fff",
+        borderRadius: "8px",
+        overflow: "hidden",
+        minHeight: "400px",
+    },
     tableHead: {
         display: "flex",
         justifyContent: "space-between",
@@ -463,10 +454,10 @@ const styles: Record<string, CSSProperties> = {
     },
     tableHeadLabel: { fontSize: "12px", fontWeight: 600, color: "#a32d2d" },
     tableBody: {
-    display: "block",
-    overflowY: "auto",
-    maxHeight: "500px",
-},
+        display: "block",
+        overflowY: "auto",
+        maxHeight: "500px",
+    },
     tableRow: {
         display: "flex",
         justifyContent: "space-between",

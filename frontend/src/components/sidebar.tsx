@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"; // 👈 add this
 
 type MenuItem = {
   label: string;
@@ -27,9 +28,11 @@ interface SidebarProps {
 
 const Sidebar = ({ active: activeProp, setActive: setActiveProp, onLogout }: SidebarProps) => {
   const [internalActive, setInternalActive] = useState("Today's Task");
+  const navigate = useNavigate(); // 👈 add this
 
   const active = activeProp ?? internalActive;
   const setActive = setActiveProp ?? setInternalActive;
+
 
   const userStr = localStorage.getItem("user");
   const user = userStr ? JSON.parse(userStr) : null;
@@ -65,20 +68,25 @@ const Sidebar = ({ active: activeProp, setActive: setActiveProp, onLogout }: Sid
         return (
           <div
             key={item.label}
-            onClick={() => setActive(item.label)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: isToday ? "space-between" : "flex-start",
-              gap: "10px",
-              background: isToday ? "#f4a93c" : "#fff",
-              color: isToday ? "#3a2200" : "#3b3b8f",
-              borderRadius: "24px",
-              padding: "11px 18px",
-              fontSize: "13px",
-              fontWeight: 500,
-              cursor: "pointer",
+            onClick={() => {
+              setActive(item.label);
+              if (item.label === "Report") navigate("/reportdashboard");
+              else if (item.label === "Task Progress") navigate("/dashboard");
+             
             }}
+          style={{
+  display: "flex",
+  alignItems: "center",
+  justifyContent: isToday ? "space-between" : "flex-start",
+  gap: "10px",
+  background: isToday ? "#f4a93c" : active === item.label ? "#FAEEDA" : "#fff",
+  color: isToday ? "#3a2200" : active === item.label ? "#854F0B" : "#3b3b8f",
+  borderRadius: "24px",
+  padding: "11px 18px",
+  fontSize: "13px",
+  fontWeight: 500,
+  cursor: "pointer",
+}}
           >
             {isToday ? (
               <>

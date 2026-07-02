@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { GiRobotLeg } from "react-icons/gi";
 
 const Login = () => {
     const [step, setStep] = useState("select");
@@ -24,17 +25,23 @@ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         });
 
         const data = await res.json();
-
         console.log("LOGIN RESPONSE:", data);
 
         if (!res.ok || !data.success) {
             throw new Error(data.message || "Login failed");
         }
 
+        // Save token and user to localStorage
         localStorage.setItem("accessToken", data.data.accessToken);
         localStorage.setItem("user", JSON.stringify(data.data.user));
 
-        window.location.href = "/reportdashboard";
+        // Role-based navigation
+        const userRole = data.data.user.role;
+        if (userRole === "ADMIN") {
+            window.location.href = "/dashboard";
+        } else {
+            window.location.href = "/report";
+        }
 
     } catch (err: any) {
         setError(err.message || "Login failed.");
