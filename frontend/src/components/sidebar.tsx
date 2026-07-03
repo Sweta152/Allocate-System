@@ -9,7 +9,7 @@ type MenuItem = {
 };
 
 const menuItems: MenuItem[] = [
-  { label: "Add User", icon: "ti ti-user-plus", path: "/add-user", roles: ["ADMIN"] },
+  { label: "Add User", icon: "ti ti-user-plus", path: "/admin/add-user", roles: ["ADMIN"] },
   { label: "Today's Task", icon: "ti ti-clipboard-list", path: "/tasks", roles: ["EMPLOYEE", "MANAGER", "ADMIN"] },
   { label: "Team Preview", icon: "ti ti-users", path: "/team", roles: ["MANAGER", "ADMIN"] },
   { label: "View Employee", icon: "ti ti-eye", path: "/employees", roles: ["MANAGER", "ADMIN"] },
@@ -29,7 +29,7 @@ const pathToLabel: Record<string, string> = {
   "/reportdashboard": "Report",
   "/team": "Team Preview",
   "/employees": "View Employee",
-  "/add-user": "Add User",
+ "/admin/add-user": "Add User",
   "/history": "History",
   "/admin": "Admin",
   "/profile": "Profile",
@@ -63,17 +63,29 @@ const Sidebar = ({ onLogout }: SidebarProps) => {
     }
   };
 
-  const handleClick = (item: MenuItem) => {
-    if (item.label === "Report") {
+ const handleClick = (item: MenuItem) => {
+  switch (item.label) {
+    case "Add User":
+      navigate("/admin/add-user");
+      break;
+
+    case "Report":
       navigate("/report");
-    } else if (item.label === "Task Progress") {
+      break;
+
+    case "Task Progress":
       navigate("/dashboard");
-    } else if (item.label === "Today's Task") {
+      break;
+
+    case "Today's Task":
       navigate("/tasks");
-    } else {
+      break;
+
+    default:
       navigate(item.path);
-    }
-  };
+      break;
+  }
+};
 
   return (
     <aside

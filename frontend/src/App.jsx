@@ -3,6 +3,7 @@ import Login from "./pages/auth/login";
 import ReportDashboard from "./pages/admin/reportdashboard";
 import Dashboard from "./pages/admin/dashboard";
 import Header from "./components/header";
+import AddUser from "./pages/admin/adduser";
 
 const PrivateRoute = ({ children, requiredRole = null }) => {
   const token = localStorage.getItem("accessToken");
@@ -17,12 +18,29 @@ const AppLayout = ({ children, onLogout }) => {
   const user = JSON.parse(localStorage.getItem("user") || "null");
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      <Header
-        onRefresh={handleRefresh}
-        userName={user?.name || user?.email || ""}
-        onLogout={onLogout}
-      />
-      <div style={{ flex: 1, display: "flex" }}>
+      <div style={{ position: "relative", zIndex: 100 }}>
+        <Header
+          onRefresh={handleRefresh}
+          userName={user?.name || user?.email || ""}
+          onLogout={onLogout}
+        />
+      </div>
+      {/*
+        transform creates a new CSS "containing block" for any
+        position:fixed descendant (e.g. Sidebar). That means if Sidebar
+        uses position:fixed + top:0, it will now be positioned relative
+        to THIS div instead of the browser viewport — so it starts
+        below Header instead of covering it.
+      */}
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          position: "relative",
+          transform: "translateZ(0)",
+          minHeight: 0,
+        }}
+      >
         {children}
       </div>
     </div>
@@ -71,6 +89,17 @@ function App() {
             <PrivateRoute>
               <AppLayout onLogout={handleLogout}>
                 <Dashboard user={user} onLogout={handleLogout} />
+              </AppLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/admin/add-user"
+          element={
+            <PrivateRoute>
+              <AppLayout onLogout={handleLogout}>
+                <AddUser />
               </AppLayout>
             </PrivateRoute>
           }
