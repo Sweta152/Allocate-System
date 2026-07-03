@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // 👈 add this
+import { useNavigate, useLocation } from "react-router-dom";
 
 type MenuItem = {
   label: string;
@@ -20,19 +20,33 @@ const menuItems: MenuItem[] = [
   { label: "Profile", icon: "ti ti-settings", path: "/profile", roles: ["EMPLOYEE", "MANAGER", "ADMIN"] },
 ];
 
+// Map route path → sidebar label
+const pathToLabel: Record<string, string> = {
+  "/tasks": "Today's Task",
+  "/task-progress": "Task Progress",
+  "/dashboard": "Task Progress",
+  "/report": "Report",
+  "/reportdashboard": "Report",
+  "/team": "Team Preview",
+  "/employees": "View Employee",
+  "/add-user": "Add User",
+  "/history": "History",
+  "/admin": "Admin",
+  "/profile": "Profile",
+};
+
 interface SidebarProps {
   active?: string;
   setActive?: (label: string) => void;
   onLogout?: () => void;
 }
 
-const Sidebar = ({ active: activeProp, setActive: setActiveProp, onLogout }: SidebarProps) => {
-  const [internalActive, setInternalActive] = useState("Today's Task");
-  const navigate = useNavigate(); // 👈 add this
+const Sidebar = ({ onLogout }: SidebarProps) => {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const active = activeProp ?? internalActive;
-  const setActive = setActiveProp ?? setInternalActive;
-
+  // Derive active label from current URL — always in sync
+  const activeLabel = pathToLabel[location.pathname] || "";
 
   const userStr = localStorage.getItem("user");
   const user = userStr ? JSON.parse(userStr) : null;
@@ -46,6 +60,18 @@ const Sidebar = ({ active: activeProp, setActive: setActiveProp, onLogout }: Sid
     } else {
       localStorage.clear();
       window.location.href = "/login";
+    }
+  };
+
+  const handleClick = (item: MenuItem) => {
+    if (item.label === "Report") {
+      navigate("/report");
+    } else if (item.label === "Task Progress") {
+      navigate("/dashboard");
+    } else if (item.label === "Today's Task") {
+      navigate("/tasks");
+    } else {
+      navigate(item.path);
     }
   };
 
@@ -64,29 +90,29 @@ const Sidebar = ({ active: activeProp, setActive: setActiveProp, onLogout }: Sid
     >
       {visibleItems.map((item) => {
         const isToday = item.label === "Today's Task";
+        const isActive = activeLabel === item.label;
 
         return (
           <div
             key={item.label}
-            onClick={() => {
-              setActive(item.label);
-              if (item.label === "Report") navigate("/reportdashboard");
-              else if (item.label === "Task Progress") navigate("/dashboard");
-             
+            onClick={() => handleClick(item)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: isToday ? "space-between" : "flex-start",
+              gap: "10px",
+
+              background: isActive ? "#f4a93c" : "#fff",
+              color: isActive ? "#3a2200" : "#3b3b8f",
+
+              borderRadius: "24px",
+              padding: "11px 18px",
+              fontSize: "13px",
+              fontWeight: isActive ? 600 : 500,
+              cursor: "pointer",
+              border: isActive && !isToday ? "1.5px solid #FAC775" : "1.5px solid transparent",
+              transition: "all 0.15s",
             }}
-          style={{
-  display: "flex",
-  alignItems: "center",
-  justifyContent: isToday ? "space-between" : "flex-start",
-  gap: "10px",
-  background: isToday ? "#f4a93c" : active === item.label ? "#FAEEDA" : "#fff",
-  color: isToday ? "#3a2200" : active === item.label ? "#854F0B" : "#3b3b8f",
-  borderRadius: "24px",
-  padding: "11px 18px",
-  fontSize: "13px",
-  fontWeight: 500,
-  cursor: "pointer",
-}}
           >
             {isToday ? (
               <>
@@ -112,7 +138,11 @@ const Sidebar = ({ active: activeProp, setActive: setActiveProp, onLogout }: Sid
               <>
                 <i
                   className={item.icon}
-                  style={{ fontSize: "16px", color: "#3b3b8f", flexShrink: 0 }}
+                  style={{
+                    fontSize: "16px",
+                    color: isActive ? "#854F0B" : "#3b3b8f",
+                    flexShrink: 0,
+                  }}
                   aria-hidden="true"
                 />
                 <span>{item.label}</span>
@@ -122,7 +152,7 @@ const Sidebar = ({ active: activeProp, setActive: setActiveProp, onLogout }: Sid
         );
       })}
 
-      {/* Sign off — same pill style as the rest */}
+      {/* Sign off */}
       <div
         onClick={handleLogout}
         style={{
@@ -136,6 +166,8 @@ const Sidebar = ({ active: activeProp, setActive: setActiveProp, onLogout }: Sid
           fontSize: "13px",
           fontWeight: 500,
           cursor: "pointer",
+          border: "1.5px solid transparent",
+          transition: "all 0.15s",
         }}
       >
         <i className="ti ti-logout-2" style={{ fontSize: "16px", color: "#3b3b8f" }} aria-hidden="true" />
