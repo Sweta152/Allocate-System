@@ -2,15 +2,34 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/auth/login";
 import ReportDashboard from "./pages/admin/reportdashboard";
 import Dashboard from "./pages/admin/dashboard";
+import Header from "./components/header";
 
-
-const PrivateRoute = ({ children }) => {
+const PrivateRoute = ({ children, requiredRole = null }) => {
   const token = localStorage.getItem("accessToken");
-  return token ? children : <Navigate to="/login" replace />;
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  if (!token) return <Navigate to="/login" replace />;
+  if (requiredRole && user?.role !== requiredRole) return <Navigate to="/report" replace />;
+  return children;
+};
+
+const AppLayout = ({ children, onLogout }) => {
+  const handleRefresh = () => window.location.reload();
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <Header
+        onRefresh={handleRefresh}
+        userName={user?.name || user?.email || ""}
+        onLogout={onLogout}
+      />
+      <div style={{ flex: 1, display: "flex" }}>
+        {children}
+      </div>
+    </div>
+  );
 };
 
 function App() {
-  // Read the logged-in user from localStorage
   const user = JSON.parse(localStorage.getItem("user") || "null");
 
   const handleLogout = () => {
@@ -28,32 +47,31 @@ function App() {
           path="/reportdashboard"
           element={
             <PrivateRoute>
-              <ReportDashboard
-                user={user}
-                onLogout={handleLogout}
-              />
+              <AppLayout onLogout={handleLogout}>
+                <ReportDashboard user={user} onLogout={handleLogout} />
+              </AppLayout>
             </PrivateRoute>
           }
         />
 
-         <Route
+        <Route
           path="/report"
           element={
             <PrivateRoute>
-              <ReportDashboard user={user} onLogout={handleLogout} />
+              <AppLayout onLogout={handleLogout}>
+                <ReportDashboard user={user} onLogout={handleLogout} />
+              </AppLayout>
             </PrivateRoute>
           }
         />
-
 
         <Route
           path="/dashboard"
           element={
             <PrivateRoute>
-              <Dashboard
-                user={user}
-                onLogout={handleLogout}
-              />
+              <AppLayout onLogout={handleLogout}>
+                <Dashboard user={user} onLogout={handleLogout} />
+              </AppLayout>
             </PrivateRoute>
           }
         />

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import type { CSSProperties } from "react";
 import Sidebar from "../../components/sidebar";
-import Header from "../../components/header";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 interface StatCardData {
@@ -22,8 +21,6 @@ const statCards: StatCardData[] = [
     { title: "No of user", today: 0, total: 0 },
 ];
 
-
-
 const MOBILE_BREAKPOINT = 768;
 
 function useIsMobile() {
@@ -40,57 +37,42 @@ function useIsMobile() {
 
 export default function ReportDashboard() {
     const isMobile = useIsMobile();
-    const [activeNav, setActiveNav] = useState("Report");
     const [sidebarOpen, setSidebarOpen] = useState(false);
-
     const [verticalCases, setVerticalCases] = useState<VerticalCase[]>([]);
     const [verticalsLoading, setVerticalsLoading] = useState(true);
     const [verticalsError, setVerticalsError] = useState<string | null>(null);
 
     const fetchVerticalCases = async () => {
-    setVerticalsLoading(true);
-    setVerticalsError(null);
-    try {
-        const timestamp = new Date().getTime();
-     const res = await fetch(
-    `${import.meta.env.VITE_API_URL}/api/verticals/case-counts?t=${timestamp}`,
-    {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            // Remove "Cache-Control" — backend CORS doesn't allow it
-        },
-    }
-);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data: VerticalCase[] = await res.json(); // only once
-        setVerticalCases(data); // only once
-    } catch (err: any) {
-        console.error("Failed to fetch vertical case counts:", err);
-        setVerticalsError(err?.message || "Failed to load data.");
-    } finally {
-        setVerticalsLoading(false);
-    }
-};
+        setVerticalsLoading(true);
+        setVerticalsError(null);
+        try {
+            const timestamp = new Date().getTime();
+            const res = await fetch(
+                `${import.meta.env.VITE_API_URL}/api/verticals/case-counts?t=${timestamp}`,
+                {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
+                }
+            );
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data: VerticalCase[] = await res.json();
+            setVerticalCases(data);
+        } catch (err: any) {
+            console.error("Failed to fetch vertical case counts:", err);
+            setVerticalsError(err?.message || "Failed to load data.");
+        } finally {
+            setVerticalsLoading(false);
+        }
+    };
 
     useEffect(() => {
         fetchVerticalCases();
     }, []);
 
-    const handleSetActiveNav = (label: string) => {
-        setActiveNav(label);
-        if (isMobile) setSidebarOpen(false);
-    };
-
-    // Replace with a real refetch/API call once data is wired up
-    const handleRefresh = () => {
-        fetchVerticalCases();
-    };
-
-    console.log("verticalCases state:", verticalCases.length);
     return (
         <div style={isMobile ? styles.rootMobile : styles.root}>
 
+            {/* Mobile hamburger topbar */}
             {isMobile && (
                 <div style={styles.mobileTopbar}>
                     <button
@@ -99,47 +81,29 @@ export default function ReportDashboard() {
                     >
                         ☰
                     </button>
-
                     <span style={styles.mobileTitle}>Report Dashboard</span>
                 </div>
             )}
 
-
-            {/* ✅ 2. SIDEBAR (PUT HERE - AFTER TOPBAR) */}
+            {/* Sidebar */}
             {isMobile ? (
                 <>
                     {sidebarOpen && (
-                        <div
-                            style={styles.overlay}
-                            onClick={() => setSidebarOpen(false)}
-                        />
+                        <div style={styles.overlay} onClick={() => setSidebarOpen(false)} />
                     )}
-
-                    <div
-                        style={{
-                            ...styles.sidebarDrawer,
-                            transform: sidebarOpen
-                                ? "translateX(0)"
-                                : "translateX(-100%)",
-                        }}
-                    >
-                        <Sidebar
-                            active={activeNav}
-                            setActive={setActiveNav}
-                        />
+                    <div style={{
+                        ...styles.sidebarDrawer,
+                        transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
+                    }}>
+                        <Sidebar />
                     </div>
                 </>
             ) : (
-                <Sidebar
-                    active={activeNav}
-                    setActive={setActiveNav}
-                />
+                <Sidebar />
             )}
 
-            {/* Content column — flex sibling of the sidebar, takes remaining width */}
+            {/* Content column */}
             <div style={isMobile ? styles.contentColMobile : styles.contentCol}>
-                <Header onRefresh={handleRefresh} />
-
                 <div style={styles.contentBody}>
                     <div style={isMobile ? styles.statsRowMobile : styles.statsRow}>
                         {statCards.map((card) => (
@@ -155,7 +119,6 @@ export default function ReportDashboard() {
                                     <BillableChart />
                                 </div>
                             </div>
-
                             <div style={styles.panel}>
                                 <p style={styles.panelTitle}>Work Progress Report</p>
                                 <div style={styles.chartPlaceholder}>
@@ -169,28 +132,18 @@ export default function ReportDashboard() {
                                 <span style={styles.tableHeadLabel}>Vertical Name</span>
                                 <span style={styles.tableHeadLabel}>Total Number of Vertical Cases</span>
                             </div>
-
                             <div style={styles.tableBody}>
                                 {verticalsLoading ? (
-                                    <div style={styles.emptyState}>
-                                        Loading vertical data...
-                                    </div>
+                                    <div style={styles.emptyState}>Loading vertical data...</div>
                                 ) : verticalsError ? (
-                                    <div style={styles.emptyState}>
-                                        {verticalsError}
-                                    </div>
+                                    <div style={styles.emptyState}>{verticalsError}</div>
                                 ) : !verticalCases || verticalCases.length === 0 ? (
-                                    <div style={styles.emptyState}>
-                                        No vertical data found.
-                                    </div>
+                                    <div style={styles.emptyState}>No vertical data found.</div>
                                 ) : (
                                     verticalCases.map((v: any, index: number) => (
-                                        <div
-                                            key={index}
-                                            style={styles.tableRow}
-                                        >
+                                        <div key={index} style={styles.tableRow}>
                                             <span>{v.name || v.Title || "-"}</span>
-                                            <span>{v.count || v.vertical_TotalCases || 0}</span>
+                                            <span>{v.count ?? v.vertical_TotalCases ?? 0}</span>
                                         </div>
                                     ))
                                 )}
@@ -228,22 +181,13 @@ const billableData = [
     { name: "In Progress", value: 200 },
     { name: "Cancelled", value: 100 },
 ];
-
 const PIE_COLORS = ["#e24b4a", "#2b2b3d", "#185fa5", "#f4a93c"];
-// Simple inline line chart placeholder — swap for a real charting library (recharts, chart.js) once data is wired up
+
 function BillableChart() {
     return (
         <ResponsiveContainer width="100%" height={180}>
             <PieChart>
-                <Pie
-                    data={billableData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={35}
-                    outerRadius={60}
-                    paddingAngle={3}
-                    dataKey="value"
-                >
+                <Pie data={billableData} cx="50%" cy="50%" innerRadius={35} outerRadius={60} paddingAngle={3} dataKey="value">
                     {billableData.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                     ))}
@@ -261,22 +205,13 @@ const workProgressData = [
     { name: "In Progress", value: 310 },
     { name: "Not Started", value: 130 },
 ];
-
 const WORK_COLORS = ["#3B6D11", "#185fa5", "#f4a93c", "#9ca3af"];
 
 function WorkProgressChart() {
     return (
         <ResponsiveContainer width="100%" height={180}>
             <PieChart>
-                <Pie
-                    data={workProgressData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={35}
-                    outerRadius={60}
-                    paddingAngle={3}
-                    dataKey="value"
-                >
+                <Pie data={workProgressData} cx="50%" cy="50%" innerRadius={35} outerRadius={60} paddingAngle={3} dataKey="value">
                     {workProgressData.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={WORK_COLORS[index % WORK_COLORS.length]} />
                     ))}
@@ -289,21 +224,19 @@ function WorkProgressChart() {
 }
 
 const styles: Record<string, CSSProperties> = {
-    // Desktop: sidebar + content side by side in one row
     root: {
         display: "flex",
         flexDirection: "row",
         alignItems: "stretch",
-        minHeight: "100vh",
+        minHeight: "100%",
         width: "100%",
         background: "#ececec",
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     },
-    // Mobile: stacked, sidebar becomes an overlay drawer (handled by sidebarDrawer below)
     rootMobile: {
         display: "flex",
         flexDirection: "column",
-        minHeight: "100vh",
+        minHeight: "100%",
         width: "100%",
         background: "#ececec",
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
@@ -320,150 +253,37 @@ const styles: Record<string, CSSProperties> = {
         top: 0,
         zIndex: 30,
     },
-    hamburgerBtn: {
-        border: "none",
-        background: "transparent",
-        fontSize: "20px",
-        cursor: "pointer",
-        padding: 4,
-    },
+    hamburgerBtn: { border: "none", background: "transparent", fontSize: "20px", cursor: "pointer", padding: 4 },
     mobileTitle: { fontSize: "15px", fontWeight: 700, color: "#1a1a2e" },
-    overlay: {
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.4)",
-        zIndex: 40,
-    },
-    // Sidebar drawer: fixed/overlay on mobile only — on desktop the sidebar
-    // renders inline as a normal flex child with a fixed width via flexShrink
+    overlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 40 },
     sidebarDrawer: {
-        position: "fixed",
-        top: 0,
-        left: 0,
-        bottom: 0,
-        width: "230px",
-        maxWidth: "80vw",
-        zIndex: 50,
+        position: "fixed", top: 0, left: 0, bottom: 0,
+        width: "230px", maxWidth: "80vw", zIndex: 50,
         transition: "transform 0.25s ease",
-        boxShadow: "2px 0 12px rgba(0,0,0,0.15)",
-        overflowY: "auto",
+        boxShadow: "2px 0 12px rgba(0,0,0,0.15)", overflowY: "auto",
     },
-    // Content column sits beside the sidebar and takes the remaining width.
-    // No padding here — the Header should sit flush at the top; padding lives in contentBody instead.
-    contentCol: {
-        flex: 1,
-        minWidth: 0,
-        display: "flex",
-        flexDirection: "column",
-        overflowY: "hidden",
-    },
-    contentColMobile: {
-        flex: 1,
-        minWidth: 0,
-        display: "flex",
-        flexDirection: "column",
-        overflowY: "hidden",
-    },
-    contentBody: {
-        display: "flex",
-        flexDirection: "column",
-        gap: "14px",
-        padding: "16px",
-    },
-    statsRow: {
-        display: "grid",
-        gridTemplateColumns: "repeat(4, 1fr)",
-        gap: "12px",
-    },
-    statsRowMobile: {
-        display: "grid",
-        gridTemplateColumns: "repeat(2, 1fr)",
-        gap: "10px",
-    },
-    statCard: {
-        background: "#fff",
-        borderRadius: "8px",
-        overflow: "hidden",
-    },
-    statHead: {
-        background: "#2b2b3d",
-        color: "#fff",
-        fontSize: "11px",
-        fontWeight: 500,
-        textAlign: "center",
-        padding: "7px",
-    },
+    contentCol: { flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflowY: "auto" },
+    contentColMobile: { flex: 1, minWidth: 0, display: "flex", flexDirection: "column", overflowY: "auto" },
+    contentBody: { display: "flex", flexDirection: "column", gap: "14px", padding: "16px" },
+    statsRow: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" },
+    statsRowMobile: { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px" },
+    statCard: { background: "#fff", borderRadius: "8px", overflow: "hidden" },
+    statHead: { background: "#2b2b3d", color: "#fff", fontSize: "11px", fontWeight: 500, textAlign: "center", padding: "7px" },
     statBody: { padding: "10px 14px" },
-    statLine: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: "6px",
-    },
+    statLine: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" },
     statLabel: { fontSize: "11px", color: "#185fa5", fontWeight: 500 },
     statNum: { fontSize: "20px", fontWeight: 700, color: "#1a1a2e" },
     statBar: { height: "3px", background: "#e24b4a", borderRadius: "2px", margin: "4px 0 8px" },
-
-    contentRow: {
-        display: "grid",
-        gridTemplateColumns: "1.6fr 1fr",
-        gap: "14px",
-        flex: 1,
-        minWidth: 0,
-        alignItems: "start", // 👈 added, removed flex: 1
-    },
-    contentRowMobile: {
-        display: "flex",
-        flexDirection: "column",
-        gap: "14px",
-    },
+    contentRow: { display: "grid", gridTemplateColumns: "1.6fr 1fr", gap: "14px", minWidth: 0, alignItems: "start" },
+    contentRowMobile: { display: "flex", flexDirection: "column", gap: "14px" },
     leftCol: { display: "flex", flexDirection: "column", gap: "14px", minWidth: 0 },
     panel: { background: "#fff", borderRadius: "8px", padding: "14px 16px", minHeight: 200 },
-    panelTitle: {
-        fontSize: "13px",
-        fontWeight: 600,
-        color: "#1a1a2e",
-        textAlign: "center",
-        margin: "0 0 8px",
-    },
+    panelTitle: { fontSize: "13px", fontWeight: 600, color: "#1a1a2e", textAlign: "center", margin: "0 0 8px" },
     chartPlaceholder: { height: 180 },
-    emptyState: {
-        flex: 1,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "#999",
-        fontSize: "12px",
-        padding: "24px",
-        minHeight: 140,
-    },
-
-    rightCol: {
-        background: "#fff",
-        borderRadius: "8px",
-        overflow: "hidden",
-        minHeight: "400px",
-    },
-    tableHead: {
-        display: "flex",
-        justifyContent: "space-between",
-        padding: "10px 16px",
-        borderBottom: "2px solid #e24b4a",
-        background: "#f3f3f3",
-        gap: "12px",
-    },
+    emptyState: { flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "#999", fontSize: "12px", padding: "24px", minHeight: 140 },
+    rightCol: { background: "#fff", borderRadius: "8px", overflow: "hidden", minHeight: "400px" },
+    tableHead: { display: "flex", justifyContent: "space-between", padding: "10px 16px", borderBottom: "2px solid #e24b4a", background: "#f3f3f3", gap: "12px" },
     tableHeadLabel: { fontSize: "12px", fontWeight: 600, color: "#a32d2d" },
-    tableBody: {
-        display: "block",
-        overflowY: "auto",
-        maxHeight: "500px",
-    },
-    tableRow: {
-        display: "flex",
-        justifyContent: "space-between",
-        padding: "10px 16px",
-        borderBottom: "1px solid #f1f1f1",
-        fontSize: "13px",
-        color: "#374151",
-    },
+    tableBody: { display: "block", overflowY: "auto", maxHeight: "500px" },
+    tableRow: { display: "flex", justifyContent: "space-between", padding: "10px 16px", borderBottom: "1px solid #f1f1f1", fontSize: "13px", color: "#374151" },
 };
