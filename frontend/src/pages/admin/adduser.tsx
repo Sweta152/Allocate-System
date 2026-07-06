@@ -273,6 +273,8 @@ export default function AddUser() {
                                     }
                                 >
                                     <option value="">Select Manager</option>
+                                    <option value="Joyce">Joyce</option>
+                                    <option value="SPRAINT">SPRAINT</option>
                                 </select>
 
                                 {!isMobile && <p style={styles.note}>* Please enter Email only</p>}
@@ -333,6 +335,10 @@ export default function AddUser() {
                                     }
                                 >
                                     <option value="">Search User Name</option>
+                                    <option value="Tech">Tech</option>
+                                    <option value="Legal">Legal</option>
+                                    <option value="SD">SD</option>
+                                    <option value="HR & Admin">HR & Admin</option>
                                 </select>
                             </div>
                         </div>
