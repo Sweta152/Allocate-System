@@ -38,6 +38,7 @@ export default function AddUser() {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
+    const [showSuccess, setShowSuccess] = useState(false);
 
     const generatePassword = () => {
         const chars =
@@ -87,14 +88,18 @@ export default function AddUser() {
                 throw new Error(data?.message || "Failed to create user");
             }
 
-            // Success — navigate to the employee list/screen
-            // TODO: adjust the path below to match your actual route
-            navigate("/employees");
+            // Show success popup instead of navigating immediately
+            setShowSuccess(true);
         } catch (err: any) {
             setError(err?.message || "Something went wrong");
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const handleSuccessClose = () => {
+        setShowSuccess(false);
+        navigate("/reportdashboard"); // change or remove this if you want to stay on the page
     };
 
     return (
@@ -350,6 +355,21 @@ export default function AddUser() {
                     </div>
                 </div>
             </div>
+
+            {showSuccess && (
+                <div style={styles.overlay}>
+                    <div style={styles.successModal}>
+                        <div style={styles.successIcon}>✓</div>
+                        <h3 style={styles.successTitle}>User Added Successfully</h3>
+                        <p style={styles.successText}>
+                            {formData.firstName} {formData.lastName} has been added as a new user.
+                        </p>
+                        <button style={styles.successBtn} onClick={handleSuccessClose}>
+                            OK
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -398,6 +418,9 @@ const styles: Record<string, CSSProperties> = {
         inset: 0,
         background: "rgba(0,0,0,0.4)",
         zIndex: 40,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
     },
     sidebarDrawer: {
         position: "fixed",
@@ -569,5 +592,49 @@ const styles: Record<string, CSSProperties> = {
         fontWeight: 700,
         cursor: "pointer",
         width: "100%",
+    },
+
+    successModal: {
+        background: "#fff",
+        borderRadius: 12,
+        padding: "32px",
+        width: 360,
+        maxWidth: "90vw",
+        textAlign: "center",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+    },
+    successIcon: {
+        width: 56,
+        height: 56,
+        borderRadius: "50%",
+        background: "#e6f9ec",
+        color: "#15803d",
+        fontSize: 28,
+        fontWeight: 700,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        margin: "0 auto 16px",
+    },
+    successTitle: {
+        margin: "0 0 8px",
+        fontSize: 18,
+        fontWeight: 700,
+        color: "#1a1a2e",
+    },
+    successText: {
+        margin: "0 0 24px",
+        fontSize: 14,
+        color: "#6b7280",
+    },
+    successBtn: {
+        background: "linear-gradient(135deg, #e53935, #c62828)",
+        color: "#fff",
+        border: "none",
+        borderRadius: 8,
+        padding: "10px 32px",
+        fontSize: 14,
+        fontWeight: 700,
+        cursor: "pointer",
     },
 };
