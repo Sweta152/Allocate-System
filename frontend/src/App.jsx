@@ -4,6 +4,7 @@ import ReportDashboard from "./pages/admin/reportdashboard";
 import Dashboard from "./pages/admin/dashboard";
 import Header from "./components/header";
 import AddUser from "./pages/admin/adduser";
+import WorkInProgress from "./pages/workinprogress";
 
 const PrivateRoute = ({ children, requiredRole = null }) => {
   const token = localStorage.getItem("accessToken");
@@ -105,6 +106,17 @@ function App() {
           }
         />
 
+
+        <Route
+          path="/workinprogress"
+          element={
+            <PrivateRoute>
+              <AppLayout onLogout={handleLogout}>
+                <WorkInProgress />
+              </AppLayout>
+            </PrivateRoute>
+          }
+        />
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

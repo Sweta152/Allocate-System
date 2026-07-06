@@ -63,27 +63,15 @@ const Sidebar = ({ onLogout }: SidebarProps) => {
     }
   };
 
- const handleClick = (item: MenuItem) => {
-  switch (item.label) {
-    case "Add User":
-      navigate("/admin/add-user");
-      break;
-
-    case "Report":
-      navigate("/report");
-      break;
-
-    case "Task Progress":
-      navigate("/dashboard");
-      break;
-
-    case "Today's Task":
-      navigate("/tasks");
-      break;
-
-    default:
-      navigate(item.path);
-      break;
+const handleClick = (item: MenuItem) => {
+  if (item.label === "Add User") {
+    navigate("/admin/add-user");
+  } else if (item.label === "Task Progress") {
+    navigate("/dashboard");
+  } else if (item.label === "Report") {
+    navigate("/report");
+  } else {
+    navigate("/workinprogress");
   }
 };
 
