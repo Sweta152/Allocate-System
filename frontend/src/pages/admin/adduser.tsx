@@ -273,8 +273,8 @@ export default function AddUser() {
                                     }
                                 >
                                     <option value="">Select Manager</option>
-                                    <option value="Joyce">Joyce</option>
-                                    <option value="SPRAINT">SPRAINT</option>
+                                    <option value="Joyce">joyce@gmail.com</option>
+                                    <option value="SPRAINT">spraint@gmail.com</option>
                                 </select>
 
                                 {!isMobile && <p style={styles.note}>* Please enter Email only</p>}
