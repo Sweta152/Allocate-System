@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const sql = require("mssql");
+const supabase = require("../../config/supabaseClient");
 
 router.post("/add-user", async (req, res) => {
   try {
@@ -18,60 +18,47 @@ router.post("/add-user", async (req, res) => {
       workedInTeams,
     } = req.body;
 
-    const pool = global.pool;
+    if (!firstName || !lastName || !email) {
+      return res.status(400).json({
+        success: false,
+        message: "First name, last name and email are required.",
+      });
+    }
 
-    await pool.request()
-      .input("FirstName", sql.VarChar, firstName)
-      .input("LastName", sql.VarChar, lastName)
-      .input("Email", sql.VarChar, email)
-      .input("EmployeeID", sql.VarChar, employeeId)
-      .input("Designation", sql.VarChar, designation)
-      .input("Department", sql.VarChar, department)
-      .input("DOB", sql.Date, dob)
-      .input("DOJ", sql.Date, doj)
-      .input("ReportingManager", sql.VarChar, reportingManager)
-      .input("Password", sql.VarChar, password)
-      .input("WorkedInTeams", sql.VarChar, workedInTeams)
+    const { data, error } = await supabase
+      .from("user_master")
+      .insert([
+        {
+          "First Name": firstName,
+          "Last Name": lastName,
+          "Email": email,
+          "Employee ID": employeeId || null,
+          "Designation": designation || null,
+          "Department": department || null,
+          "Date of Birth": dob || null,
+          "Date of Joining": doj || null,
+          "Reporting Manager": reportingManager || null,
+          "Password": password || null,
+          "Worked In Teams": workedInTeams || null,
+        },
+      ])
+      .select();
 
-      .query(`
-        INSERT INTO user_master
-        (
-            FirstName,
-            LastName,
-            Email,
-            EmployeeID,
-            Designation,
-            Department,
-            DOB,
-            DOJ,
-            ReportingManager,
-            Password,
-            WorkedInTeams
-        )
-        VALUES
-        (
-            @FirstName,
-            @LastName,
-            @Email,
-            @EmployeeID,
-            @Designation,
-            @Department,
-            @DOB,
-            @DOJ,
-            @ReportingManager,
-            @Password,
-            @WorkedInTeams
-        )
-      `);
+    if (error) {
+      throw error;
+    }
 
     res.json({
       success: true,
-      message: "User Added Successfully"
+      message: "User Added Successfully",
+      user: data?.[0],
     });
-
   } catch (err) {
     console.log(err);
-    res.status(500).json(err);
+    res.status(500).json({
+      success: false,
+      message: err.message || "Failed to add user",
+    });
   }
 });
 
