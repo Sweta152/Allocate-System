@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import type { CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/sidebar";
-
+ 
 const MOBILE_BREAKPOINT = 768;
-
+ 
 function useIsMobile() {
     const [isMobile, setIsMobile] = useState(
         typeof window !== "undefined" ? window.innerWidth < MOBILE_BREAKPOINT : false
@@ -16,12 +16,12 @@ function useIsMobile() {
     }, []);
     return isMobile;
 }
-
+ 
 export default function AddUser() {
     const navigate = useNavigate();
     const isMobile = useIsMobile();
     const [sidebarOpen, setSidebarOpen] = useState(false);
-
+ 
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
@@ -35,43 +35,42 @@ export default function AddUser() {
         workedInTeams: "",
         password: "",
     });
-
+ 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
-
+ 
     const generatePassword = () => {
         const chars =
             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%";
-
+ 
         let pass = "";
-
+ 
         for (let i = 0; i < 10; i++) {
             pass += chars.charAt(Math.floor(Math.random() * chars.length));
         }
-
+ 
         setFormData({
             ...formData,
             password: pass,
         });
     };
-
+ 
     const copyPassword = () => {
         navigator.clipboard.writeText(formData.password);
         alert("Password copied!");
     };
-
+ 
     const handleRegister = async () => {
         // basic required-field check
         if (!formData.firstName || !formData.lastName || !formData.email) {
             setError("First name, last name and email are required.");
             return;
         }
-
+ 
         setError("");
         setIsSubmitting(true);
-
+ 
         try {
-            // TODO: replace with your actual API base URL / endpoint
             const response = await fetch(
                 `${import.meta.env.VITE_API_URL}/api/users/add-user`,
                 {
@@ -82,12 +81,12 @@ export default function AddUser() {
                     body: JSON.stringify(formData),
                 }
             );
-
+ 
             if (!response.ok) {
                 const data = await response.json().catch(() => null);
                 throw new Error(data?.message || "Failed to create user");
             }
-
+ 
             // Success — navigate to the employee list/screen
             // TODO: adjust the path below to match your actual route
             navigate("/employees");
@@ -97,7 +96,7 @@ export default function AddUser() {
             setIsSubmitting(false);
         }
     };
-
+ 
     return (
         <div
             style={isMobile ? styles.rootMobile : styles.root}
@@ -115,7 +114,7 @@ export default function AddUser() {
                     <span style={styles.mobileTitle}>Add New User</span>
                 </div>
             )}
-
+ 
             {/* Sidebar */}
             {isMobile ? (
                 <>
@@ -125,7 +124,7 @@ export default function AddUser() {
                             onClick={() => setSidebarOpen(false)}
                         />
                     )}
-
+ 
                     <div
                         style={{
                             ...styles.sidebarDrawer,
@@ -140,7 +139,7 @@ export default function AddUser() {
             ) : (
                 <Sidebar />
             )}
-
+ 
             {/* Content */}
             <div style={isMobile ? styles.contentColMobile : styles.contentCol}>
                 <div style={styles.contentBody}>
@@ -149,7 +148,7 @@ export default function AddUser() {
                             <h2 style={styles.heading}>Add New User</h2>
                         </div>
                     )}
-
+ 
                     <div style={isMobile ? styles.cardMobile : styles.card}>
                         <div style={isMobile ? styles.gridMobile : styles.grid}>
                             {/* Row 1 */}
@@ -159,7 +158,7 @@ export default function AddUser() {
                                     <option>Search User Name</option>
                                 </select>
                             </div>
-
+ 
                             <div>
                                 <label style={styles.label}>First Name</label>
                                 <input
@@ -170,7 +169,7 @@ export default function AddUser() {
                                     }
                                 />
                             </div>
-
+ 
                             <div>
                                 <label style={styles.label}>Last Name</label>
                                 <input
@@ -181,7 +180,7 @@ export default function AddUser() {
                                     }
                                 />
                             </div>
-
+ 
                             {/* Row 2 */}
                             <div>
                                 <label style={styles.label}>Email</label>
@@ -194,7 +193,7 @@ export default function AddUser() {
                                     }
                                 />
                             </div>
-
+ 
                             <div>
                                 <label style={styles.label}>Employee ID</label>
                                 <input
@@ -205,7 +204,7 @@ export default function AddUser() {
                                     }
                                 />
                             </div>
-
+ 
                             <div>
                                 <label style={styles.label}>Designation</label>
                                 <input
@@ -216,15 +215,21 @@ export default function AddUser() {
                                     }
                                 />
                             </div>
-
+ 
                             {/* Row 3 */}
                             <div>
                                 <label style={styles.label}>Department</label>
-                                <select style={styles.input}>
-                                    <option>Select Department</option>
+                                <select
+                                    style={styles.input}
+                                    value={formData.department}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, department: e.target.value })
+                                    }
+                                >
+                                    <option value="">Select Department</option>
                                 </select>
                             </div>
-
+ 
                             <div>
                                 <label style={styles.label}>Date of Birth</label>
                                 <input
@@ -236,7 +241,7 @@ export default function AddUser() {
                                     }
                                 />
                             </div>
-
+ 
                             <div>
                                 <label style={styles.label}>Date of Joining</label>
                                 <input
@@ -248,17 +253,26 @@ export default function AddUser() {
                                     }
                                 />
                             </div>
-
+ 
                             {/* Row 4 */}
                             <div>
                                 <label style={styles.label}>Reporting Manager</label>
-                                <select style={styles.input}>
-                                    <option>Select Manager</option>
+                                <select
+                                    style={styles.input}
+                                    value={formData.reportingManager}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            reportingManager: e.target.value,
+                                        })
+                                    }
+                                >
+                                    <option value="">Select Manager</option>
                                 </select>
-
+ 
                                 <p style={styles.note}>* Please enter Email only</p>
                             </div>
-
+ 
                             <div>
                                 <label style={styles.label}>Password</label>
                                 <input
@@ -267,7 +281,7 @@ export default function AddUser() {
                                     readOnly
                                 />
                             </div>
-
+ 
                             <div
                                 style={{
                                     display: "flex",
@@ -283,7 +297,7 @@ export default function AddUser() {
                                 >
                                     Generate
                                 </button>
-
+ 
                                 <button
                                     style={isMobile ? styles.smallButtonMobile : styles.smallButton}
                                     onClick={copyPassword}
@@ -292,18 +306,27 @@ export default function AddUser() {
                                     Copy
                                 </button>
                             </div>
-
+ 
                             {/* Row 5 */}
                             <div>
                                 <label style={styles.label}>Worked In Teams</label>
-                                <select style={styles.input}>
-                                    <option>Search User Name</option>
+                                <select
+                                    style={styles.input}
+                                    value={formData.workedInTeams}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            workedInTeams: e.target.value,
+                                        })
+                                    }
+                                >
+                                    <option value="">Search User Name</option>
                                 </select>
                             </div>
                         </div>
-
+ 
                         {error && <p style={styles.error}>{error}</p>}
-
+ 
                         <div style={isMobile ? styles.footerMobile : styles.footer}>
                             <button
                                 style={{
@@ -323,7 +346,7 @@ export default function AddUser() {
         </div>
     );
 }
-
+ 
 const styles: Record<string, CSSProperties> = {
     root: {
         display: "flex",
@@ -343,7 +366,7 @@ const styles: Record<string, CSSProperties> = {
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         position: "relative",
     },
-
+ 
     mobileTopbar: {
         display: "flex",
         alignItems: "center",
@@ -381,7 +404,7 @@ const styles: Record<string, CSSProperties> = {
         boxShadow: "2px 0 12px rgba(0,0,0,0.15)",
         overflowY: "auto",
     },
-
+ 
     contentCol: {
         flex: 1,
         display: "flex",
@@ -404,7 +427,7 @@ const styles: Record<string, CSSProperties> = {
         minHeight: 0,
         overflowY: "auto",
     },
-
+ 
     header: {
         background: "#fff",
         borderRadius: 10,
@@ -413,13 +436,13 @@ const styles: Record<string, CSSProperties> = {
         padding: 12,
         boxShadow: "0 2px 8px rgba(0,0,0,.08)",
     },
-
+ 
     heading: {
         margin: 0,
         fontSize: 34,
         fontWeight: 700,
     },
-
+ 
     card: {
         background: "#fff",
         borderRadius: 10,
@@ -432,7 +455,7 @@ const styles: Record<string, CSSProperties> = {
         padding: 16,
         boxShadow: "0 2px 8px rgba(0,0,0,.08)",
     },
-
+ 
     grid: {
         display: "grid",
         gridTemplateColumns: "repeat(3,1fr)",
@@ -443,14 +466,14 @@ const styles: Record<string, CSSProperties> = {
         gridTemplateColumns: "1fr",
         gap: "16px",
     },
-
+ 
     label: {
         display: "block",
         marginBottom: 8,
         color: "#1c1975",
         fontSize: 16,
     },
-
+ 
     input: {
         width: "100%",
         padding: "12px",
@@ -461,19 +484,19 @@ const styles: Record<string, CSSProperties> = {
         borderRadius: 4,
         boxSizing: "border-box",
     },
-
+ 
     note: {
         color: "#d40000",
         marginTop: 8,
         fontWeight: 600,
     },
-
+ 
     error: {
         color: "#d40000",
         marginTop: 20,
         fontWeight: 600,
     },
-
+ 
     smallButton: {
         padding: "10px 18px",
         border: "1px solid #ccc",
@@ -490,7 +513,7 @@ const styles: Record<string, CSSProperties> = {
         flex: 1,
         fontSize: 15,
     },
-
+ 
     footer: {
         display: "flex",
         justifyContent: "flex-end",
@@ -500,7 +523,7 @@ const styles: Record<string, CSSProperties> = {
         display: "flex",
         marginTop: 24,
     },
-
+ 
     registerButton: {
         background: "#df3740",
         color: "#fff",
