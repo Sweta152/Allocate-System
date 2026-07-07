@@ -369,23 +369,7 @@ const Login = () => {
                         </form>
 
 
-                        <button
-                            onClick={() => {
-                                setStep("select");
-                                setError("");
-                            }}
-                            style={{
-                                marginTop:"20px",
-                                background:"none",
-                                border:"none",
-                                color:"#6b7280",
-                                cursor:"pointer",
-                                textDecoration:"underline",
-                            }}
-                        >
-                            ← Back to role selection
-                        </button>
-
+                   
                     </div>
                 )}
 
