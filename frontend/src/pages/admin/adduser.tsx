@@ -34,6 +34,7 @@ export default function AddUser() {
         reportingManager: "",
         workedInTeams: "",
         password: "",
+        role: "",
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,10 +64,17 @@ export default function AddUser() {
 
     const handleRegister = async () => {
         // basic required-field check
-        if (!formData.firstName || !formData.lastName || !formData.email) {
-            setError("First name, last name and email are required.");
-            return;
-        }
+        if (
+    !formData.firstName ||
+    !formData.lastName ||
+    !formData.email ||
+    !formData.role
+) {
+    setError(
+        "First name, last name, email and role are required."
+    );
+    return;
+}
 
         setError("");
         setIsSubmitting(true);
@@ -236,6 +244,52 @@ export default function AddUser() {
                             </div>
 
                             <div>
+    <label 
+        style={
+            isMobile 
+            ? styles.labelMobile 
+            : styles.label
+        }
+    >
+        Role
+    </label>
+
+    <select
+        style={
+            isMobile 
+            ? styles.inputMobile 
+            : styles.input
+        }
+        value={formData.role}
+        onChange={(e)=> 
+            setFormData({
+                ...formData,
+                role:e.target.value
+            })
+        }
+    >
+
+        <option value="">
+            Select Role
+        </option>
+
+        <option value="ADMIN">
+            Admin
+        </option>
+
+        <option value="MANAGER">
+            Manager
+        </option>
+
+        <option value="EMPLOYEE">
+            Employee
+        </option>
+
+    </select>
+
+</div>
+
+                            <div>
                                 <label style={isMobile ? styles.labelMobile : styles.label}>Date of Birth</label>
                                 <input
                                     type="date"
@@ -286,40 +340,57 @@ export default function AddUser() {
                                 </div>
                             )}
 
-                            <div style={isMobile ? { gridColumn: "1 / -1" } : undefined}>
-                                <label style={isMobile ? styles.labelMobile : styles.label}>Password</label>
-                                <input
-                                    style={isMobile ? styles.inputMobile : styles.input}
-                                    value={formData.password}
-                                    readOnly
-                                />
-                            </div>
+                          <div style={isMobile ? { gridColumn: "1 / -1" } : undefined}>
+    <label style={isMobile ? styles.labelMobile : styles.label}>
+        Password
+    </label>
 
-                            <div
-                                style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 10,
-                                    flexWrap: "wrap",
-                                    ...(isMobile ? { gridColumn: "1 / -1" } : { alignItems: "end" }),
-                                }}
-                            >
-                                <button
-                                    style={isMobile ? styles.smallButtonMobile : styles.smallButton}
-                                    onClick={generatePassword}
-                                    type="button"
-                                >
-                                    Generate
-                                </button>
+    <input
+        type="text"
+        style={isMobile ? styles.inputMobile : styles.input}
+        value={formData.password}
+        onChange={(e) =>
+            setFormData({
+                ...formData,
+                password: e.target.value,
+            })
+        }
+        placeholder="Enter password or generate"
+    />
 
-                                <button
-                                    style={isMobile ? styles.smallButtonMobile : styles.smallButton}
-                                    onClick={copyPassword}
-                                    type="button"
-                                >
-                                    Copy
-                                </button>
-                            </div>
+    {/* Buttons below password */}
+    <div
+        style={{
+            display: "flex",
+            gap: "10px",
+            marginTop: "10px",
+        }}
+    >
+        <button
+            style={
+                isMobile
+                    ? styles.smallButtonMobile
+                    : styles.smallButton
+            }
+            onClick={generatePassword}
+            type="button"
+        >
+            Generate
+        </button>
+
+        <button
+            style={
+                isMobile
+                    ? styles.smallButtonMobile
+                    : styles.smallButton
+            }
+            onClick={copyPassword}
+            type="button"
+        >
+            Copy
+        </button>
+    </div>
+</div>
 
                             {/* Row 5 */}
                             <div style={isMobile ? { gridColumn: "1 / -1" } : undefined}>
